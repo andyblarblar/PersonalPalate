@@ -1,16 +1,11 @@
-.combined-shape-icon1 {
+.combined-shape-icon {
   position: relative;
-  width: 101px;
-  height: 101px;
+  width: 101.3px;
+  height: 101.3px;
   z-index: 0;
 }
-
-.divider1,
-.p1 {
+.divider {
   position: absolute;
-}
-
-.divider1 {
   height: 100%;
   width: 100%;
   top: 0;
@@ -20,8 +15,12 @@
   border-radius: var(--br-12xs);
   background-color: var(--brand-light);
 }
-
-.p1 {
+.icons24ic-date,
+.p {
+  mix-blend-mode: normal;
+}
+.p {
+  position: absolute;
   margin: 0 !important;
   height: 12.54%;
   width: 62.49%;
@@ -30,30 +29,22 @@
   bottom: 50.25%;
   left: 18.46%;
   opacity: 0.6;
-  mix-blend-mode: normal;
   z-index: 1;
 }
-
-.icons24ic-date1 {
+.icons24ic-date {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
   justify-content: flex-start;
   position: relative;
   gap: var(--gap-3xs);
-  mix-blend-mode: normal;
 }
-
-.sign-up1 {
+.sign-in-icon {
   position: relative;
-  font-weight: 800;
-  display: inline-block;
-  width: 282px;
-  height: 86px;
-  flex-shrink: 0;
+  width: 236px;
+  height: 66px;
 }
-
-.line-item {
+.line-child {
   position: absolute;
   height: 100%;
   width: 100%;
@@ -62,34 +53,37 @@
   bottom: 0;
   left: 0;
   border-radius: var(--br-3xs);
-  background-color: var(--brand-light);
+  background-color: var(--color-darkslateblue-100);
 }
-
-.line1 {
+.line {
+  position: relative;
   width: 90px;
   height: 4px;
 }
-
-.line1,
-.personalpalate1 {
-  position: relative;
+.personalpalate {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
-
-.line-group {
+.personalpalate-wrapper {
+  position: relative;
+  width: 138px;
+  height: 22px;
+}
+.line-parent {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
   gap: var(--gap-base);
+  font-size: var(--title-text-title-3-size);
 }
-
-.text-input2 {
+.text-input {
   position: relative;
   font-weight: 500;
   display: none;
 }
-
-.inputdefaultracktangletrue2 {
+.inputdefaultracktangletrue {
   position: absolute;
   height: 63.89%;
   width: 100%;
@@ -108,8 +102,7 @@
   padding: var(--padding-base) var(--padding-3xs) var(--padding-base)
     var(--padding-mini);
 }
-
-.label16 {
+.label14 {
   position: absolute;
   top: 0;
   left: 0;
@@ -117,66 +110,33 @@
   font-weight: 600;
   color: var(--grey-500);
 }
-
-.input2 {
+.input {
   position: relative;
   width: 232px;
   height: 72px;
 }
-
-.input-group {
+.frame-wrapper,
+.input-parent {
   display: flex;
-  flex-direction: row;
   align-items: flex-start;
   justify-content: flex-start;
+}
+.input-parent {
+  flex-direction: row;
   gap: var(--gap-9xl);
 }
-
-.input4 {
-  position: relative;
-  width: 492px;
-  height: 72px;
-}
-
-.input-wrapper {
-  display: flex;
+.frame-wrapper {
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-}
-
-.frame-parent13 {
-  gap: var(--gap-xl);
-  font-size: var(--button-text-button-text-semi-bold-12-size);
   color: var(--grey-400);
 }
-
-.frame-parent12,
-.frame-parent13,
-.frame-wrapper3 {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-}
-
-.frame-parent12 {
-  gap: 48px;
-}
-
-.frame-wrapper3 {
-  font-size: var(--title-text-title-3-size);
-}
-
-.button3 {
+.button1 {
   position: relative;
   font-weight: 600;
 }
-
-.button2 {
+.button {
   border-radius: var(--br-7xs);
   background-color: var(--color-darkslateblue-100);
-  width: 491px;
+  width: 499px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -185,49 +145,42 @@
   box-sizing: border-box;
   text-align: center;
   color: var(--white);
-  cursor: pointer;
 }
-
-.sign-in1 {
+.frame-parent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: var(--gap-xl);
+}
+.create-an-account {
   text-decoration: underline;
 }
-
-.return-to-sign-container {
+.new-user-create-container {
   position: relative;
   font-weight: 600;
   color: var(--grey-500);
+  text-align: center;
   cursor: pointer;
 }
-
-.frame-parent11,
-.sign-up {
+.sign-in {
+  position: absolute;
+  top: 291px;
+  left: 470px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-}
-
-.frame-parent11 {
-  align-items: center;
-  gap: var(--gap-xl);
-  font-size: var(--button-text-button-text-semi-bold-12-size);
-}
-
-.sign-up {
-  position: absolute;
-  top: 10vh;
-  left: calc((50vw - 250px));
   align-items: flex-start;
-  gap: 21px;
+  justify-content: flex-start;
+  gap: var(--gap-xl);
 }
-
-.sign-up-page {
+.login-page {
   position: relative;
   background-color: var(--color-whitesmoke-100);
   width: 100%;
-  height: 100vh;
+  height: 1024px;
   overflow: hidden;
   text-align: left;
-  font-size: 68px;
-  color: var(--brand-light);
+  font-size: var(--button-text-button-text-semi-bold-12-size);
+  color: var(--color-darkslateblue-100);
   font-family: var(--button-text-button-text-semi-bold-12);
 }
