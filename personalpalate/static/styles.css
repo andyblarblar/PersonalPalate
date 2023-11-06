@@ -15,7 +15,7 @@ body {
   --text-14-size: 14px;
   --text-16-size: 16px;
   --button-text-button-text-semi-bold-12-size: 13px;
-  --title-text-title-3-size: 18px;
+  --title-text-title-3-size: max(1.5vw, 15px);
   --font-size-5xl: 24px;
 
   /* Colors */
@@ -43,9 +43,9 @@ body {
   --gap-3xs: 10px;
   --gap-7xs: 6px;
   --gap-5xs: 8px;
-  --gap-xl: 20px;
+  --gap-xl: 1.5vh;
   --gap-9xl: 28px;
-  --gap-base: 16px;
+  --gap-base: 0.5vw;
   --gap-141xl: 160px;
 
   /* Paddings */
