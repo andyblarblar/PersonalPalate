@@ -1,6 +1,6 @@
 .stretched-input {
   position: relative;
-  width: 492px;
+  width: min(492px, max(365px, 4vw));
   height: 72px;
 }
 

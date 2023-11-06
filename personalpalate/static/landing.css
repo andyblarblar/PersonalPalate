@@ -1,7 +1,7 @@
 .combined-shape-icon1 {
   position: relative;
-  width: 101px;
-  height: 101px;
+  width: min(101px, max(7vw, 50px));
+  height: min(101px, max(7vw, 50px));
   z-index: 0;
 }
 
@@ -47,8 +47,7 @@
   position: relative;
   font-weight: 800;
   display: inline-block;
-  width: 282px;
-  height: 86px;
+  margin-bottom: 1vh;
   flex-shrink: 0;
 }
 
@@ -65,8 +64,8 @@
 }
 
 .line-container {
-  width: 90px;
-  height: 4px;
+  width: min(125px, max(10vw, 90px));
+  height: max(4px, 1vh);
 }
 
 .line-container, .brand-container {
@@ -106,7 +105,7 @@
 
 .input {
   position: relative;
-  width: 232px;
+  width: min(232px, max(4vw, 170px));
   height: 72px;
 }
 
@@ -132,7 +131,7 @@
 }
 
 .frame-parent2 {
-  gap: 48px;
+  gap: min(48px, 2vh);
 }
 
 .frame-wrapper {
@@ -142,7 +141,7 @@
 .button {
   border-radius: var(--br-7xs);
   background-color: var(--color-darkslateblue-100);
-  width: 491px;
+  width: min(491px, max(325px, 5vw));
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -180,9 +179,10 @@
 .content-container {
   position: absolute;
   top: 10vh;
-  left: calc((50vw - 250px));
+  left: max(0px, calc((50vw - 220px)));
   align-items: flex-start;
-  gap: 21px;
+  gap: 2%;
+  margin-left: 5px;
 }
 
 .page-container {
@@ -192,7 +192,7 @@
   height: 100vh;
   overflow: hidden;
   text-align: left;
-  font-size: 68px;
+  font-size: max(3vw, 23px);
   color: var(--brand-light);
   font-family: var(--button-text-button-text-semi-bold-12);
 }
