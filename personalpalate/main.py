@@ -43,6 +43,10 @@ async def login(request: Request, not_login=Depends(ensure_user_not_logged_in)):
 
 
 # TODO add register
+@app.get("/sign-up")
+async def sign_up(request: Request, not_login=Depends(ensure_user_not_logged_in)):
+    """Login page. Will redirect to home if already logged in."""
+    return templates.TemplateResponse("signup.html.jinja", {"request": request})
 
 
 @app.post("/token", response_model=Token)
