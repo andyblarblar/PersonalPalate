@@ -5,12 +5,12 @@ from sqlmodel import SQLModel, Field
 from sqlalchemy import PrimaryKeyConstraint
 
 
-class AccountDTO(SQLModel):
-    password: str
-
-class Account(AccountDTO, table=True):  # Subclass to avoid sending password to client
+class AccountDTO(SQLModel, table=True):
     email: str = Field(primary_key=True)
     followable: bool
+
+class Account(AccountDTO):  # Subclass to avoid sending password to client
+    password: str
 
 class Follow(SQLModel, table=True):
     email: str = Field(default=None, foreign_key="account.email")
