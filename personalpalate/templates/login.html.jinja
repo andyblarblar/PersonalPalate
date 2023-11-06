@@ -1,61 +1,53 @@
 {% extends "common.html.jinja" %}
 
 {% block head %}
-<link rel="stylesheet" href="static/login.css"/>
+<link rel="stylesheet" href="static/landing.css"/>
 {% endblock %}
 
 {% block body %}
-<div class="login-page">
-    <div class="sign-in">
-        <div class="icons24ic-date">
+<div class="page-container">
+    <div class="content-container">
+        <div class="date-icon-container">
             <img
-                class="combined-shape-icon"
+                class="combined-shape-icon1"
                 alt="Calendar Icon"
                 src="static/public/combined-shape.svg"
             />
 
-            <div class="p">
+            <div class="divider-container">
                 <div class="divider"></div>
             </div>
         </div>
-        <div class="sign-up1">Sign Up</div>
-
-        <form class="frame-parent11" action="/register" method="post">
-            <div class="frame-wrapper3">
-                <div class="frame-parent12">
+        <div class="title-text">Sign In</div>
+        <form class="frame-parent1" action="/token" method="post">
+            <div class="frame-wrapper">
+                <div class="frame-parent2">
                     <div class="line-group">
-                        <div class="line1">
-                            <div class="line-item"></div>
+                        <div class="line-container">
+                            <div class="line"></div>
                         </div>
-                        <div class="personalpalate1">
-                            <span>Personal</span>
-                            <b>Palate</b>
+                        <div class="brand-container">
+                            <span>Personal</span><b>Palate</b>
                         </div>
                     </div>
-                    <div class="frame-parent13">
+                    <div class="frame-parent3">
                         <div class="input-group">
-                            <div class="input2">
-                                <input class="inputdefaultracktangletrue2" type="text" id="name" name="name" required />
-                                <label for="name" class="label16">Name</label>
+                            <div class="input">
+                                <input class="rectangle-text-input" type="email" id="email" name="email" required />
+                                <label for="email">Email</label>
                             </div>
-                            <div class="input2">
-                                <input class="inputdefaultracktangletrue2" type="email" id="email" name="email" required />
-                                <label for="email" class="label16">Email</label>
-                            </div>
-                        </div>
-                        <div class="input-wrapper">
-                            <div class="input4">
-                                <input class="inputdefaultracktangletrue2" type="password" id="password" name="password" required />
-                                <label for="password" class="label16">Password</label>
+                            <div class="input">
+                                <input class="rectangle-text-input" type="password" id="password" name="password" required />
+                                <label for="password">Password</label>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <input type="submit" class="button2" value="Create Account" />
-            <div class="return-to-sign-container" id="returnToSignIn">
-                Already have an account? Return to
-                <span class="sign-in1">Sign In</span>
+            <input type="submit" class="button" value="Sign In" />
+            <div class="navigate-to-new-page-container" id="returnToSignUp">
+                New user?
+                <span class="link-text">Create an account</span>
             </div>
         </form>
     </div>
