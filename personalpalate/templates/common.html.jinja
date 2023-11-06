@@ -1,7 +1,30 @@
-<header>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="static/styles.css">
-</header>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>PersonalPalate</title>
 
-{% block body %}
-{% endblock %}
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <link rel="stylesheet" href="static/styles.css">
+        {% block head %}
+        {% endblock %}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Lato:wght@400&display=swap"
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap"
+        />
+    </head>
+    {% block body %}
+    {% endblock %}
+    {% block scripts %}
+    {% endblock %}
+</html>
+
