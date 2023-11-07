@@ -1,20 +1,24 @@
 from datetime import date
 from typing import Optional
-
 from sqlmodel import SQLModel, Field
 from sqlalchemy import PrimaryKeyConstraint
+from enum import Enum
 
+class Category(Enum):
+    dinner = "dinner"
+    lunch = "lunch"
+    breakfast = "breakfast"
 
 class AccountDTO(SQLModel, table=True):
     email: str = Field(primary_key=True)
-    followable: bool
+    followable: bool = Field(default=False)
 
 class Account(AccountDTO):  # Subclass to avoid sending password to client
     password: str
 
 class Follow(SQLModel, table=True):
-    email: str = Field(default=None, foreign_key="account.email")
-    followingEmail: str = Field(default=None, foreign_key="account.email")
+    email: str = Field(foreign_key="accountdto.email")
+    followingEmail: str = Field(foreign_key="accountdto.email")
 
     __table_args__ = (
         PrimaryKeyConstraint("email", "followingEmail"),
@@ -22,25 +26,24 @@ class Follow(SQLModel, table=True):
 
 class Meal(SQLModel, table=True):
     mealID: Optional[int] = Field(default=None, primary_key=True)
-    email: str = Field(default=None, foreign_key="account.email")
+    email: str = Field(foreign_key="accountdto.email")
     mealName: str
-    category: str
-    description: str
-    mealFrequency: int
+    category: Category
     dateMade: date
 
 class Ingredients(SQLModel, table=True):
     ingredientID: Optional[int] = Field(default=None, primary_key=True)
-    mealID: int = Field(default=None, foreign_key="meal.mealID")
+    mealID: int = Field(foreign_key="meal.mealID")
     ingredient: str
-    quantity: str
+    quantity: float
+    unit: str
 
 class MealPlan(SQLModel, table=True):
-    mealPlanID: int = Field(default=None, primary_key=True)
+    mealPlanID: Optional[int] = Field(default=None, primary_key=True)
     mealPlanDate: date
-    email: str = Field(default=None, foreign_key="account.email")
+    email: str = Field(foreign_key="accountdto.email")
 
-class Day(SQLModel, table=True):
+class MealPlanDay(SQLModel, table=True):
     dayID: Optional[int] = Field(default=None, primary_key=True)
-    mealID: int = Field(default=None, foreign_key="meal.mealID")
-    mealPlanID: int = Field(default=None, foreign_key="mealplan.mealPlanID")
+    mealID: int = Field(foreign_key="meal.mealID")
+    mealPlanID: int = Field(foreign_key="mealplan.mealPlanID")
