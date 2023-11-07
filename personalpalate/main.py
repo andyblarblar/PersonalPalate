@@ -49,6 +49,12 @@ async def sign_up(request: Request, not_login=Depends(ensure_user_not_logged_in)
     return templates.TemplateResponse("signup.html.jinja", {"request": request})
 
 
+@app.get("/settings")
+async def settings(request: Request, response_model=Token):
+    """Settings page"""
+    return templates.TemplateResponse("settings.html.jinja", {"request": request})
+
+
 @app.post("/token", response_model=Token)
 async def create_token(
     form: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response
