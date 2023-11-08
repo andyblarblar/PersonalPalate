@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import FastAPI, Depends, HTTPException, Response, Request
+from fastapi import FastAPI, Depends, HTTPException, Response, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
@@ -8,15 +8,15 @@ from sqlmodel import SQLModel, Session
 from starlette import status
 from starlette.responses import RedirectResponse
 
-from .orm.connect import prepare_db
-from .deps import (
+from personalpalate.orm.connect import prepare_db
+from personalpalate.deps import (
     db_session,
     get_current_user,
     ensure_user_not_logged_in,
 )
-from .orm.model import Account, AccountDTO
-from .security import password
-from .security.token import Token, create_access_token
+from personalpalate.orm.model import Account, AccountDTO
+from personalpalate.security import password as passlib
+from personalpalate.security.token import Token, create_access_token
 
 app = FastAPI()
 
@@ -30,7 +30,9 @@ def on_startup():
 
 
 @app.get("/")
-async def root(request: Request):
+async def root(
+    request: Request, account: Annotated[AccountDTO, Depends(get_current_user)]
+):
     """Home landing page for signed in users"""
 
     return templates.TemplateResponse("home.html.jinja", {"request": request})
@@ -42,7 +44,22 @@ async def login(request: Request, not_login=Depends(ensure_user_not_logged_in)):
     return templates.TemplateResponse("login.html.jinja", {"request": request})
 
 
-# TODO add register
+@app.post("/signup", status_code=201, response_model=AccountDTO)
+async def signup(
+    email: Annotated[str, Form()],
+    password: Annotated[str, Form()],
+    sess: Annotated[Session, Depends(db_session)],
+    not_login=Depends(ensure_user_not_logged_in),
+):
+    """Creates a new account"""
+    if sess.get(Account, email):
+        raise HTTPException(400, "user with email already exists")
+    else:
+        account = Account(email=email, password=passlib.password_context.hash(password))
+        sess.add(account)
+        sess.commit()
+
+        return AccountDTO.from_orm(account)
 
 
 @app.post("/token", response_model=Token)
@@ -50,7 +67,7 @@ async def create_token(
     form: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response
 ):
     """Creates an OAuth2 token"""
-    if password.verify_password(form.password, form.username):
+    if passlib.verify_password(form.password, form.username):
         access_token = create_access_token(form.username)
         # Set token in cookie and respond as JSON
         response.set_cookie("access_token", f"bearer {access_token}", httponly=True)

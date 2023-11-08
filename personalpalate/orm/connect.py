@@ -5,7 +5,7 @@ from .model import *  # Required to create tables
 sqlite_file_name = "db.sqlite"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
 
-engine = create_engine(sqlite_url, echo=True)
+engine = create_engine(sqlite_url, echo=True, connect_args={"check_same_thread": False})
 
 
 def prepare_db():
