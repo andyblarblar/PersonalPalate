@@ -31,12 +31,15 @@ class Follow(SQLModel, table=True):
     __table_args__ = (PrimaryKeyConstraint("email", "followingEmail"),)
 
 
-class Meal(SQLModel, table=True):
-    mealID: Optional[int] = Field(default=None, primary_key=True)
-    email: str = Field(foreign_key="account.email")
+class MealDTO(SQLModel):
     mealName: str
     category: Category
     dateMade: date
+
+
+class Meal(MealDTO, table=True):
+    mealID: Optional[int] = Field(default=None, primary_key=True)
+    email: str = Field(foreign_key="account.email")
 
 
 class Ingredients(SQLModel, table=True):

@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import FastAPI, Depends, HTTPException, Response, Request, Form
 from fastapi.templating import Jinja2Templates
@@ -15,7 +15,14 @@ from personalpalate.deps import (
     get_current_user,
     ensure_user_not_logged_in,
 )
-from personalpalate.orm.model import Account, AccountDTO, Follow
+from personalpalate.orm.model import (
+    Account,
+    AccountDTO,
+    Follow,
+    Meal,
+    MealDTO,
+    Category,
+)
 from personalpalate.security import password as passlib
 from personalpalate.security.token import Token, create_access_token
 
@@ -92,6 +99,71 @@ async def unfollow(
         raise HTTPException(400, "Follow relationship does not exist")
 
     sess.delete(f)
+
+
+@app.post("/meal", status_code=201, response_model=list[Meal])
+async def add_meals(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+    meals: list[MealDTO],
+):
+    """Adds many meals to the users account"""
+
+    # Transform into DB model
+    meal_rec = [Meal(email=account.email, **m.dict()) for m in meals]
+    sess.add_all(meal_rec)
+
+    return meal_rec
+
+
+@app.delete("/meal")
+async def delete_meals(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+    meals: list[Meal],
+):
+    """Deletes many meals from the users account"""
+
+    for meal in meals:
+        if meal.email != account.email:
+            raise HTTPException(401, "User does not own meal")
+
+        sess.delete(meal)
+
+
+@app.put("/meal", response_model=list[Meal])
+async def update_meals(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+    meals: list[Meal],
+):
+    """Updates many meals from the users account"""
+
+    for meal in meals:
+        if meal.email != account.email:
+            raise HTTPException(401, "User does not own meal")
+
+        sess.add(meal)
+
+    return meals
+
+
+@app.get("/meal", response_model=list[Meal])
+async def get_meals(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+    category: Optional[Category] = None,
+):
+    """Gets all meals from the users account. Optionally filters by category"""
+
+    q = select(Meal).where(Meal.email == account.email)
+
+    if category:
+        q = q.where(Meal.category == category)
+
+    meals = sess.exec(q).all()
+
+    return meals
 
 
 # Login stuff
