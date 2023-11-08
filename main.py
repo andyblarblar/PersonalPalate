@@ -4,7 +4,8 @@ from fastapi import FastAPI, Depends, HTTPException, Response, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
-from sqlmodel import SQLModel, Session
+from pydantic import BaseModel
+from sqlmodel import SQLModel, Session, select
 from starlette import status
 from starlette.responses import RedirectResponse
 
@@ -14,7 +15,7 @@ from personalpalate.deps import (
     get_current_user,
     ensure_user_not_logged_in,
 )
-from personalpalate.orm.model import Account, AccountDTO
+from personalpalate.orm.model import Account, AccountDTO, Follow
 from personalpalate.security import password as passlib
 from personalpalate.security.token import Token, create_access_token
 
@@ -36,6 +37,64 @@ async def root(
     """Home landing page for signed in users"""
 
     return templates.TemplateResponse("home.html.jinja", {"request": request})
+
+
+class FollowData(BaseModel):
+    email: str
+
+
+@app.post("/account/follow", status_code=201, response_model=Follow)
+async def follow(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+    email: FollowData,
+):
+    """Follows another user, if allowed"""
+
+    other_acc = sess.exec(
+        select(Account).where(Account.email == email).where(Account.followable)
+    ).first()
+
+    if not other_acc:
+        raise HTTPException(
+            400, "Other account is either not followable or does not exist"
+        )
+
+    if sess.exec(
+        select(Follow)
+        .where(Follow.followingEmail == account.email)
+        .where(Follow.email == email)
+    ).first():
+        raise HTTPException(200, "Account is already following")
+
+    f = Follow(followingEmail=account.email, email=email)
+    sess.add(f)
+    sess.commit()
+
+    return f
+
+
+@app.delete("/account/follow")
+async def unfollow(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+    email: FollowData,
+):
+    """Unfollows another user"""
+
+    f = sess.exec(
+        select(Follow)
+        .where(Follow.followingEmail == account.email)
+        .where(Follow.email == email)
+    ).first()
+
+    if not f:
+        raise HTTPException(400, "Follow relationship does not exist")
+
+    sess.delete(f)
+
+
+# Login stuff
 
 
 @app.get("/login")
