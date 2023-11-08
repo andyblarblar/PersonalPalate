@@ -101,6 +101,28 @@ async def unfollow(
     sess.delete(f)
 
 
+class AccountSettings(BaseModel):
+    followable: bool
+
+
+@app.put("/account/settings", response_model=AccountDTO)
+async def update_settings(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+    settings: AccountSettings,
+):
+    """Updates user settings"""
+
+    follow2 = settings.followable
+    account = sess.get(Account, account.email)
+    account.followable = follow2
+
+    sess.add(account)
+    sess.commit()
+
+    return AccountDTO.from_orm(account)
+
+
 @app.post("/meal", status_code=201, response_model=list[Meal])
 async def add_meals(
     sess: Annotated[Session, Depends(db_session)],
