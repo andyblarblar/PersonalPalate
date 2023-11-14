@@ -67,9 +67,11 @@ class MealPlan(SQLModel, table=True):
     email: str = Field(foreign_key="account.email")
 
 
-class MealPlanDay(SQLModel, table=True):
-    dayID: Optional[int] = Field(default=None, primary_key=True)
+class MealPlanDayDTO(SQLModel):
     weekday: Weekday
     mealName: str
-    mealID: int = Field(foreign_key="meal.mealID")
+
+
+class MealPlanDay(MealPlanDayDTO, table=True):
+    dayID: Optional[int] = Field(default=None, primary_key=True)
     mealPlanID: int = Field(foreign_key="mealplan.mealPlanID")

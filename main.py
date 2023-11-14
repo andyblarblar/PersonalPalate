@@ -24,7 +24,7 @@ from personalpalate.orm.model import (
     MealDTO,
     Category,
     MealPlan,
-    MealPlanDay,
+    MealPlanDay, MealPlanDayDTO, Weekday,
 )
 from personalpalate.security import password as passlib
 from personalpalate.security.token import Token, create_access_token
@@ -42,7 +42,7 @@ def on_startup():
 
 @app.get("/")
 async def root(
-    request: Request, account: Annotated[AccountDTO, Depends(get_current_user)]
+        request: Request, account: Annotated[AccountDTO, Depends(get_current_user)]
 ):
     """Home landing page for signed in users"""
 
@@ -55,9 +55,9 @@ class FollowData(BaseModel):
 
 @app.post("/account/follow", status_code=201, response_model=Follow)
 async def follow(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    email: FollowData,
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        email: FollowData,
 ):
     """Follows another user, if allowed"""
 
@@ -71,9 +71,9 @@ async def follow(
         )
 
     if sess.exec(
-        select(Follow)
-        .where(Follow.followingEmail == account.email)
-        .where(Follow.email == email)
+            select(Follow)
+                    .where(Follow.followingEmail == account.email)
+                    .where(Follow.email == email)
     ).first():
         raise HTTPException(200, "Account is already following")
 
@@ -86,9 +86,9 @@ async def follow(
 
 @app.delete("/account/follow")
 async def unfollow(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    email: FollowData,
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        email: FollowData,
 ):
     """Unfollows another user"""
 
@@ -110,9 +110,9 @@ class AccountSettings(BaseModel):
 
 @app.put("/account/settings", response_model=AccountDTO)
 async def update_settings(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    settings: AccountSettings,
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        settings: AccountSettings,
 ):
     """Updates user settings"""
 
@@ -128,9 +128,9 @@ async def update_settings(
 
 @app.post("/meal", status_code=201, response_model=list[Meal])
 async def add_meals(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    meals: list[MealDTO],
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        meals: list[MealDTO],
 ):
     """Adds many meals to the users account"""
 
@@ -143,9 +143,9 @@ async def add_meals(
 
 @app.delete("/meal")
 async def delete_meals(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    meals: list[Meal],
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        meals: list[Meal],
 ):
     """Deletes many meals from the users account"""
 
@@ -158,9 +158,9 @@ async def delete_meals(
 
 @app.put("/meal", response_model=list[Meal])
 async def update_meals(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    meals: list[Meal],
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        meals: list[Meal],
 ):
     """Updates many meals from the users account"""
 
@@ -175,9 +175,9 @@ async def update_meals(
 
 @app.get("/meal", response_model=list[Meal])
 async def get_meals(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    category: Optional[Category] = None,
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        category: Optional[Category] = None,
 ):
     """Gets all meals from the users account. Optionally filters by category"""
 
@@ -191,11 +191,11 @@ async def get_meals(
     return meals
 
 
-@app.get("/recommend")
+@app.get("/recommend", response_model=MealPlanDayDTO)
 async def create_recommend(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    categories: list[Category],
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        categories: list[Category],
 ):
     """Creates a recommendation for the user. They must accept before we make changes. Returns a list of meal names
     for each day, in order of categories given."""
@@ -210,8 +210,9 @@ async def create_recommend(
     follower_ids = [f.email for f in followers]
     follower_ids.append(account.email)
 
-    reccs = []
-    for cat in categories:
+    # Create recommendations per category
+    reccs: list[MealPlanDayDTO] = []
+    for (i, cat) in enumerate(categories):
         # All meals from this user or followers, of a given category
         meals = sess.exec(
             select(Meal).where(Meal.email.in_(follower_ids)).where(Meal.category == cat)
@@ -219,18 +220,62 @@ async def create_recommend(
 
         # List of (meal name, day chosen)
         past_choices: list[tuple[str, datetime.date]] = sess.exec(
-            select(MealPlanDay.mealID, MealPlan.mealPlanDate)
+            select(MealPlanDay.mealName, MealPlan.mealPlanDate)
             .join(MealPlan, MealPlanDay.mealPlanID == MealPlan.mealPlanID)
             .where(account.email == MealPlan.email)
         ).all()
 
         result = "mac"  # TODO call recommendation fn
-        reccs.append(result)
+
+        match i:
+            case 0:
+                day = Weekday.sunday
+            case 1:
+                day = Weekday.monday
+            case 2:
+                day = Weekday.tuesday
+            case 3:
+                day = Weekday.wednesday
+            case 4:
+                day = Weekday.thursday
+            case 5:
+                day = Weekday.friday
+            case 6:
+                day = Weekday.saturday
+
+        reccs.append(MealPlanDayDTO(mealName=result, weekday=day))
 
     return reccs
 
 
-# TODO make fn to accept a meal reccomendation
+class RecommendationConfirmData(BaseModel):
+    date: datetime.date
+    days: list[MealPlanDayDTO]
+
+
+@app.post("/recommend", status_code=201)
+async def persist_recommend(
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        chosen: RecommendationConfirmData
+):
+    """Persists a chosen mealplan"""
+
+    # Check if meal week is already chosen
+    if sess.exec(select(MealPlan).where(MealPlan.mealPlanDate == chosen.date).where(
+            MealPlan.email == account.email)).first():
+        raise HTTPException(400, "Date already chosen!")
+
+    # Make the main plan
+    mealplan = MealPlan(mealPlanDate=chosen.date, email=account.email)
+    sess.add(mealplan)
+
+    # Make each day record
+    days = [MealPlan(mealPlanID=mealplan.mealPlanID, **d) for d in chosen.days]
+    sess.add_all(days)
+
+    sess.commit()
+
 
 # Login stuff
 
@@ -243,11 +288,11 @@ async def login(request: Request, not_login=Depends(ensure_user_not_logged_in)):
 
 @app.post("/signup", status_code=201, response_model=AccountDTO)
 async def signup(
-    email: Annotated[str, Form()],
-    password: Annotated[str, Form()],
-    name: Annotated[str, Form()],
-    sess: Annotated[Session, Depends(db_session)],
-    not_login=Depends(ensure_user_not_logged_in),
+        email: Annotated[str, Form()],
+        password: Annotated[str, Form()],
+        name: Annotated[str, Form()],
+        sess: Annotated[Session, Depends(db_session)],
+        not_login=Depends(ensure_user_not_logged_in),
 ):
     """Creates a new account"""
     if sess.get(Account, email):
@@ -264,7 +309,7 @@ async def signup(
 
 @app.post("/token", response_model=Token)
 async def create_token(
-    form: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response
+        form: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response
 ):
     """Creates an OAuth2 token"""
     if passlib.verify_password(form.password, form.username):
