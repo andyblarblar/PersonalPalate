@@ -197,6 +197,12 @@ async def login(request: Request, not_login=Depends(ensure_user_not_logged_in)):
     return templates.TemplateResponse("login.html.jinja", {"request": request})
 
 
+@app.get("/signup")
+async def signup(request: Request, not_login=Depends(ensure_user_not_logged_in)):
+    """Signup page. Will redirect to home if already logged in."""
+    return templates.TemplateResponse("signup.html.jinja", {"request": request})
+
+
 @app.post("/signup", status_code=201, response_model=AccountDTO)
 async def signup(
     email: Annotated[str, Form()],

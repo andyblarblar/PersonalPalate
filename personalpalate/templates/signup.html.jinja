@@ -20,7 +20,7 @@
             </div>
         </div>
         <div class="title-text">Sign Up</div>
-        <form class="frame-parent1" action="/register" method="post">
+        <form class="frame-parent1" action="/signup" id="signup" method="post">
             <div class="frame-wrapper">
                 <div class="frame-parent2">
                     <div class="line-group">
@@ -38,7 +38,7 @@
                                 <label for="name">Name</label>
                             </div>
                             <div class="input">
-                                <input class="rectangle-text-input" type="email" id="email" name="username" required />
+                                <input class="rectangle-text-input" type="email" id="email" name="email" required />
                                 <label for="email">Email</label>
                             </div>
                         </div>
@@ -50,6 +50,9 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="invalid-credentials" id="invalid" hidden>
+                Email already in use!
             </div>
             <input type="submit" class="button" value="Create Account" />
             <div class="navigate-to-new-page-container" id="returnToSignIn">
