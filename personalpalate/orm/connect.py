@@ -68,6 +68,12 @@ def prepare_db():
                 category="pasta",
                 dateMade=date(2023, 11, 4),
             )
+            m5 = Meal(
+                email=a1.email,
+                mealName="Macaroni and Cheese",
+                category="pasta",
+                dateMade=date(2023, 12, 4),
+            )
             m4 = Meal(
                 email=a4.email,
                 mealName="Ceasar Salad",
@@ -78,6 +84,7 @@ def prepare_db():
             sess.add(m2)
             sess.add(m3)
             sess.add(m4)
+            sess.add(m5)
             sess.commit()
 
             i1a = Ingredients(

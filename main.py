@@ -1,3 +1,4 @@
+import datetime
 from typing import Annotated, Optional
 
 from fastapi import FastAPI, Depends, HTTPException, Response, Request, Form
@@ -5,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from sqlmodel import SQLModel, Session, select
+from sqlmodel import SQLModel, Session, select, or_
 from starlette import status
 from starlette.responses import RedirectResponse
 
@@ -22,6 +23,8 @@ from personalpalate.orm.model import (
     Meal,
     MealDTO,
     Category,
+    MealPlan,
+    MealPlanDay,
 )
 from personalpalate.security import password as passlib
 from personalpalate.security.token import Token, create_access_token
@@ -188,6 +191,47 @@ async def get_meals(
     return meals
 
 
+@app.get("/recommend")
+async def create_recommend(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+    categories: list[Category],
+):
+    """Creates a recommendation for the user. They must accept before we make changes. Returns a list of meal names
+    for each day, in order of categories given."""
+
+    if len(categories) != 7:
+        raise HTTPException(400, "Too few categories!")
+
+    # Create a list of all emails meals can be from
+    followers = sess.exec(
+        select(Follow).where(Follow.followingEmail == account.email)
+    ).all()
+    follower_ids = [f.email for f in followers]
+    follower_ids.append(account.email)
+
+    reccs = []
+    for cat in categories:
+        # All meals from this user or followers, of a given category
+        meals = sess.exec(
+            select(Meal).where(Meal.email.in_(follower_ids)).where(Meal.category == cat)
+        ).all()
+
+        # List of (meal name, day chosen)
+        past_choices: list[tuple[str, datetime.date]] = sess.exec(
+            select(MealPlanDay.mealID, MealPlan.mealPlanDate)
+            .join(MealPlan, MealPlanDay.mealPlanID == MealPlan.mealPlanID)
+            .where(account.email == MealPlan.email)
+        ).all()
+
+        result = "mac"  # TODO call recommendation fn
+        reccs.append(result)
+
+    return reccs
+
+
+# TODO make fn to accept a meal reccomendation
+
 # Login stuff
 
 
@@ -209,7 +253,9 @@ async def signup(
     if sess.get(Account, email):
         raise HTTPException(400, "user with email already exists")
     else:
-        account = Account(email=email, password=passlib.password_context.hash(password), name=name)
+        account = Account(
+            email=email, password=passlib.password_context.hash(password), name=name
+        )
         sess.add(account)
         sess.commit()
 
