@@ -197,6 +197,10 @@
   font-family: var(--button-text-button-text-semi-bold-12);
 }
 
+.invalid-credentials {
+  color: red;
+}
+
 label {
   position: absolute;
   top: 0;

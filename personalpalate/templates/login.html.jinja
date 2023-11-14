@@ -19,7 +19,7 @@
             </div>
         </div>
         <div class="title-text">Sign In</div>
-        <form class="frame-parent1" action="/token" method="post">
+        <form id="login" class="frame-parent1" action="/token" method="post">
             <div class="frame-wrapper">
                 <div class="frame-parent2">
                     <div class="line-group">
@@ -43,6 +43,9 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="invalid-credentials" id="invalid" hidden>
+                Invalid username/password
             </div>
             <input type="submit" class="button" value="Sign In" />
             <div class="navigate-to-new-page-container" id="returnToSignUp">
