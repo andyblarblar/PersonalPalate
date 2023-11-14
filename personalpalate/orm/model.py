@@ -14,6 +14,7 @@ class Category(Enum):
     pasta = "pasta"
     salad = "salad"
 
+
 class Weekday(Enum):
     sunday = "sunday"
     monday = "monday"

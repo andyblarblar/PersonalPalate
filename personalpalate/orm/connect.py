@@ -15,7 +15,7 @@ def prepare_db():
     with Session(engine) as sess:
         # Only generate once
         if not sess.exec(
-            select(Account).where(Account.email == "avealov@umich.edu")
+                select(Account).where(Account.email == "avealov@umich.edu")
         ).first():
             a1 = Account(
                 email="avealov@umich.edu",
@@ -81,39 +81,39 @@ def prepare_db():
             sess.commit()
 
             i1a = Ingredients(
-                mealID=m1.mealID, 
-                ingredient="chicken", 
-                quantity=8, 
+                mealID=m1.mealID,
+                ingredient="chicken",
+                quantity=8,
                 unit="oz"
             )
             i1b = Ingredients(
-                mealID=m1.mealID, 
-                ingredient="rice", 
-                quantity=1, 
+                mealID=m1.mealID,
+                ingredient="rice",
+                quantity=1,
                 unit="cup"
             )
             i2a = Ingredients(
-                mealID=m2.mealID, 
-                ingredient="chicken", 
-                quantity=8, 
+                mealID=m2.mealID,
+                ingredient="chicken",
+                quantity=8,
                 unit="oz"
             )
             i2b = Ingredients(
-                mealID=m2.mealID, 
-                ingredient="brocolli", 
-                quantity=4, 
+                mealID=m2.mealID,
+                ingredient="brocolli",
+                quantity=4,
                 unit="oz"
             )
             i3a = Ingredients(
-                mealID=m3.mealID, 
-                ingredient="macaroni", 
-                quantity=4, 
+                mealID=m3.mealID,
+                ingredient="macaroni",
+                quantity=4,
                 unit="oz"
             )
             i3b = Ingredients(
-                mealID=m3.mealID, 
-                ingredient="shredded cheese", 
-                quantity=2, 
+                mealID=m3.mealID,
+                ingredient="shredded cheese",
+                quantity=2,
                 unit="oz"
             )
             i4a = Ingredients(
@@ -123,9 +123,9 @@ def prepare_db():
                 unit="grams",
             )
             i4b = Ingredients(
-                mealID=m4.mealID, 
-                ingredient="croutons", 
-                quantity=30, 
+                mealID=m4.mealID,
+                ingredient="croutons",
+                quantity=30,
                 unit="grams"
 
             )
@@ -150,60 +150,60 @@ def prepare_db():
             sess.add(mp2)
             sess.commit()
 
-            d1 = MealPlanDay(mealID=m1.mealID, 
-                             mealPlanID=mp1.mealPlanID, 
+            d1 = MealPlanDay(mealID=m1.mealID,
+                             mealPlanID=mp1.mealPlanID,
                              mealName=m1.mealName,
                              weekday="monday")
-            d2 = MealPlanDay(mealID=m2.mealID, 
-                             mealPlanID=mp1.mealPlanID, 
+            d2 = MealPlanDay(mealID=m2.mealID,
+                             mealPlanID=mp1.mealPlanID,
                              mealName=m2.mealName,
                              weekday="wednesday")
-            d3 = MealPlanDay(mealID=m1.mealID, 
-                             mealPlanID=mp1.mealPlanID, 
+            d3 = MealPlanDay(mealID=m1.mealID,
+                             mealPlanID=mp1.mealPlanID,
                              mealName=m1.mealName,
                              weekday="tuesday")
-            d4 = MealPlanDay(mealID=m1.mealID, 
-                             mealPlanID=mp1.mealPlanID, 
+            d4 = MealPlanDay(mealID=m1.mealID,
+                             mealPlanID=mp1.mealPlanID,
                              mealName=m1.mealName,
                              weekday="thursday")
-            d5 = MealPlanDay(mealID=m2.mealID, 
-                             mealPlanID=mp1.mealPlanID, 
+            d5 = MealPlanDay(mealID=m2.mealID,
+                             mealPlanID=mp1.mealPlanID,
                              mealName=m2.mealName,
                              weekday="friday")
-            d6 = MealPlanDay(mealID=m1.mealID, 
-                             mealPlanID=mp1.mealPlanID, 
+            d6 = MealPlanDay(mealID=m1.mealID,
+                             mealPlanID=mp1.mealPlanID,
                              mealName=m1.mealName,
                              weekday="sunday")
-            d7 = MealPlanDay(mealID=m2.mealID, 
-                             mealPlanID=mp1.mealPlanID, 
+            d7 = MealPlanDay(mealID=m2.mealID,
+                             mealPlanID=mp1.mealPlanID,
                              mealName=m2.mealName,
                              weekday="saturday")
-            d8 = MealPlanDay(mealID=m2.mealID, 
-                             mealPlanID=mp2.mealPlanID, 
+            d8 = MealPlanDay(mealID=m2.mealID,
+                             mealPlanID=mp2.mealPlanID,
                              mealName=m2.mealName,
                              weekday="monday")
-            d9 = MealPlanDay(mealID=m1.mealID, 
-                             mealPlanID=mp2.mealPlanID, 
+            d9 = MealPlanDay(mealID=m1.mealID,
+                             mealPlanID=mp2.mealPlanID,
                              mealName=m1.mealName,
                              weekday="saturday")
-            d10 = MealPlanDay(mealID=m4.mealID, 
-                              mealPlanID=mp2.mealPlanID, 
+            d10 = MealPlanDay(mealID=m4.mealID,
+                              mealPlanID=mp2.mealPlanID,
                               mealName=m4.mealName,
                               weekday="sunday")
-            d11 = MealPlanDay(mealID=m1.mealID, 
-                              mealPlanID=mp2.mealPlanID, 
+            d11 = MealPlanDay(mealID=m1.mealID,
+                              mealPlanID=mp2.mealPlanID,
                               mealName=m1.mealName,
                               weekday="tuesday")
-            d12 = MealPlanDay(mealID=m4.mealID, 
-                              mealPlanID=mp2.mealPlanID, 
+            d12 = MealPlanDay(mealID=m4.mealID,
+                              mealPlanID=mp2.mealPlanID,
                               mealName=m4.mealName,
                               weekday="wednesday")
-            d13 = MealPlanDay(mealID=m2.mealID, 
+            d13 = MealPlanDay(mealID=m2.mealID,
                               mealPlanID=mp2.mealPlanID,
-                              mealName=m2.mealName, 
+                              mealName=m2.mealName,
                               weekday="friday")
-            d14 = MealPlanDay(mealID=m1.mealID, 
-                              mealPlanID=mp2.mealPlanID, 
+            d14 = MealPlanDay(mealID=m1.mealID,
+                              mealPlanID=mp2.mealPlanID,
                               mealName=m1.mealName,
                               weekday="thursday")
             sess.add(d1)
