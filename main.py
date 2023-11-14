@@ -201,6 +201,7 @@ async def login(request: Request, not_login=Depends(ensure_user_not_logged_in)):
 async def signup(
     email: Annotated[str, Form()],
     password: Annotated[str, Form()],
+    name: Annotated[str, Form()],
     sess: Annotated[Session, Depends(db_session)],
     not_login=Depends(ensure_user_not_logged_in),
 ):
@@ -208,7 +209,7 @@ async def signup(
     if sess.get(Account, email):
         raise HTTPException(400, "user with email already exists")
     else:
-        account = Account(email=email, password=passlib.password_context.hash(password))
+        account = Account(email=email, password=passlib.password_context.hash(password), name=name)
         sess.add(account)
         sess.commit()
 

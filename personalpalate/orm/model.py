@@ -17,6 +17,7 @@ class Category(Enum):
 
 class AccountDTO(SQLModel):
     email: str = Field(primary_key=True)
+    name: str
     followable: bool = Field(default=False)
 
 

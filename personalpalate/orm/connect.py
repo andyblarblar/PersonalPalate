@@ -18,20 +18,25 @@ def prepare_db():
             select(Account).where(Account.email == "avealov@umich.edu")
         ).first():
             a1 = Account(
-                email="avealov@umich.edu", password=password_context.hash("123")
+                email="avealov@umich.edu",
+                password=password_context.hash("123"),
+                name="andrew ealovega",
             )
             a2 = Account(
                 email="smileyjo@umich.edu",
+                name="Joe smiley",
                 password=password_context.hash("456"),
                 followable=1,
             )
             a3 = Account(
                 email="joeysmiley33@gmail.com",
+                name="Joe smiley Jr.",
                 password=password_context.hash("789"),
                 followable=1,
             )
             a4 = Account(
                 email="joey@gmail.com",
+                name="Son of Joe smiley",
                 password=password_context.hash("321"),
                 followable=1,
             )
