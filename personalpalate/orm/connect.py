@@ -127,6 +127,7 @@ def prepare_db():
                 ingredient="croutons", 
                 quantity=30, 
                 unit="grams"
+
             )
             i4c = Ingredients(
                 mealID=m4.mealID,
@@ -148,7 +149,6 @@ def prepare_db():
             sess.add(mp1)
             sess.add(mp2)
             sess.commit()
-
 
             d1 = MealPlanDay(mealID=m1.mealID, 
                              mealPlanID=mp1.mealPlanID, 
