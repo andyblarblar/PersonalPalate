@@ -30,6 +30,7 @@ from personalpalate.orm.model import (
 )
 from personalpalate.security import password as passlib
 from personalpalate.security.token import Token, create_access_token
+from personalpalate.meal_rec import construct_pmf
 
 app = FastAPI()
 
@@ -216,12 +217,12 @@ def create_recc(sess: Session, account: AccountDTO, category: Category) -> str:
         .where(account.email == MealPlan.email)
     ).all()
 
-    result = "mac"  # TODO call recommendation fn
+    result = construct_pmf(meals, past_choices)
 
     return result
 
 
-@app.get("/recommend", response_model=list[MealPlanDayDTO])
+@app.post("/recommend", response_model=list[MealPlanDayDTO])
 async def create_recommend(
     sess: Annotated[Session, Depends(db_session)],
     account: Annotated[AccountDTO, Depends(get_current_user)],
@@ -278,7 +279,7 @@ class RecommendationConfirmData(BaseModel):
     days: list[MealPlanDayDTO]
 
 
-@app.post("/recommend", status_code=201)
+@app.post("/recommend/save", status_code=201)
 async def persist_recommend(
     sess: Annotated[Session, Depends(db_session)],
     account: Annotated[AccountDTO, Depends(get_current_user)],
