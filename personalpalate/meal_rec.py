@@ -2,17 +2,18 @@ import math
 import statistics
 from collections import Counter
 from datetime import date, timedelta, datetime
+from typing import List
 from personalpalate.orm.model import Meal
 
 
 '''
 # Function to construct the probability mass function for the dataset
 # Parameters
-#   - meals: list of meals in a user's dataset
-#   - past_choices: list containing each meal chosen and the date chosen
-# Returns: recommended meal as a string
+#   - meals (type: list[meal class objects]): list of meals in a user's dataset
+#   - past_choices (type: list[tuple[str, datetime.date]]): list containing each meal chosen and the date chosen
+# Returns: meal_selection (type: string): selected meal from PMF
 '''
-def construct_pmf(meals, past_choices):
+def construct_pmf(meals: List[Meal], past_choices: List[Tuple[str, datetime.date]]) -> str:
 
     # frequency of each mealName in the dataset
     freq = Counter(meals.mealName)
@@ -20,9 +21,6 @@ def construct_pmf(meals, past_choices):
 
     # Constructing the PMF based on the frequency in the dataset
     pmf = {value: freq[values] / total_count for values in freq}
-
-    seasonal_weight = 0.0   # positive seasonal weight
-    recency_weight = 0.0    # negative recency weight
 
     # apply recency_weight
     for meal_name, meal_date in past_choices:
@@ -59,13 +57,6 @@ def construct_pmf(meals, past_choices):
 
     return meal_selection
 
-
-def main():
-    # query DB for meal table
-    construct_pmf()
-
-if __name__ == "__main__":
-    main()
 
 
 
