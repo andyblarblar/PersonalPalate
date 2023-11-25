@@ -1,8 +1,7 @@
 from collections import Counter, defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import random
-
-from personalpalate.orm.model import MealDTO
+from orm.model import MealDTO
 
 """
 # Function to construct the probability mass function for the dataset
@@ -35,18 +34,20 @@ def construct_pmf(
     for meal in meals:
         meal_dict[meal.mealName].append(meal.dateMade)
 
-    # compute the average date the meal is cooked
-    #TODO this is not real python
-    meal_avg = {
-        meal.mealName: datetime.min
-        + (sum(meal_dict[meal], datetime.min) / len(meal_dict[meal]))
-        for meal in meal_dict
-    }
+    # compute the sum of dates for each meal
+    average_day_meal = defaultdict(list)
+    for meal, dates in meal_dict.items():
+        total_day_num = sum(date.timetuple().tm_yday for date in dates)
+        # compute the average day of each meal
+        avg_day = total_day_num / len(dates)
+        average_day_meal[meal] = int(avg_day)
 
     # apply seasonal weight
-    for meal in meals:
-        seasonal_weight = 1 / (date.today() - meal_avg[meal.mealName])
-        pmf[meal.mealName] *= seasonal_weight
+    for meal in average_day_meal:
+        difference_date = (date.today() - timedelta(days=average_day_meal[meal]))
+        distance = difference_date.timetuple().tm_yday
+        seasonal_weight = 1 / distance
+        pmf[meal] *= seasonal_weight
 
     # calculate the adjusted total probability for normalization
     total_probability = sum(pmf.values())
