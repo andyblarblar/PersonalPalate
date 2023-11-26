@@ -194,8 +194,11 @@ async def get_meals(
     return meals
 
 
-def create_recc(sess: Session, account: AccountDTO, category: Category) -> str:
-    """Creates a recommendation for a single day for a user. Returns meal name."""
+def create_recc(
+    sess: Session, account: AccountDTO, category: Category
+) -> Optional[str]:
+    """Creates a recommendation for a single day for a user. Returns meal name, or none if user has no meals in
+    category"""
     # Create a list of all emails meals can be from
     followers = sess.exec(
         select(Follow).where(Follow.followingEmail == account.email)
@@ -209,6 +212,9 @@ def create_recc(sess: Session, account: AccountDTO, category: Category) -> str:
         .where(Meal.email.in_(follower_ids))
         .where(Meal.category == category)
     ).all()
+
+    if len(meals) == 0:
+        return None
 
     # List of (meal name, day chosen)
     past_choices: list[tuple[str, datetime.date]] = sess.exec(
@@ -239,6 +245,9 @@ async def create_recommend(
     for i, cat in enumerate(categories):
         # Call recommendations algorithm
         result = create_recc(sess, account, cat)
+
+        if result is None:
+            raise HTTPException(400, f"User does not have any meals of category: {cat}")
 
         match i:
             case 0:
@@ -271,6 +280,11 @@ async def create_recommend_single(
     """Creates a recommendation for only a single day."""
     result = create_recc(sess, account, category)
 
+    if result is None:
+        raise HTTPException(
+            400, f"User does not have any meals of category: {category}"
+        )
+
     return MealPlanDayDTO(mealName=result, weekday=day)
 
 
@@ -285,22 +299,51 @@ async def persist_recommend(
     account: Annotated[AccountDTO, Depends(get_current_user)],
     chosen: RecommendationConfirmData,
 ):
-    """Persists a chosen mealplan"""
+    """Persists a chosen mealplan, or overwrites an existing one"""
 
-    # Check if meal week is already chosen
-    if sess.exec(
+    # Avoids the scenario of only part week mealplans, which breaks assumptions
+    if len(chosen.days) != 7:
+        raise HTTPException(400, "Must post 7 days")
+
+    mealplan = sess.exec(
         select(MealPlan)
         .where(MealPlan.mealPlanDate == chosen.date)
         .where(MealPlan.email == account.email)
-    ).first():
-        raise HTTPException(400, "Date already chosen!")
+    ).first()
 
-    # Make the main plan
-    mealplan = MealPlan(mealPlanDate=chosen.date, email=account.email)
-    sess.add(mealplan)
+    # Ensure mealplan has ID
+    if mealplan is None:
+        # Make the main plan
+        mealplan = MealPlan(mealPlanDate=chosen.date, email=account.email)
+        sess.add(mealplan)
+        sess.commit()
+
+    existing_days = sess.exec(
+        select(MealPlanDay).join(
+            MealPlan, MealPlanDay.mealPlanID == mealplan.mealPlanID
+        )
+    ).all()
 
     # Make each day record
-    days = [MealPlan(mealPlanID=mealplan.mealPlanID, **d) for d in chosen.days]
+    days = [
+        MealPlanDay(mealPlanID=mealplan.mealPlanID, **d.dict()) for d in chosen.days
+    ]
+
+    # Update existing days
+    for eday in existing_days:
+        weekday = eday.weekday
+        nday = [d for d in days if d.weekday == weekday]
+
+        if len(nday) == 0:
+            continue
+
+        nday = nday[0]
+        days.remove(nday)
+
+        eday.mealName = nday.mealName
+        sess.add(eday)
+
+    # Add remaining days
     sess.add_all(days)
 
     sess.commit()
