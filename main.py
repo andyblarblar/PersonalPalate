@@ -355,6 +355,27 @@ async def persist_recommend(
     sess.commit()
 
 
+@app.get("/recommend", response_model=list[RecommendationConfirmData])
+async def get_persisted_plans(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+):
+    """Gets all past meal plans the user has saved"""
+    all_plans = sess.exec(select(MealPlan).where(MealPlan.email == account.email)).all()
+
+    out = []
+    for plan in all_plans:
+        days = sess.exec(
+            select(MealPlanDay).where(MealPlanDay.mealPlanID == plan.mealPlanID)
+        ).all()
+
+        days = [MealPlanDayDTO.from_orm(d) for d in days]
+        date = plan.mealPlanDate
+        out.append(RecommendationConfirmData(days=days, date=date))
+
+    return out
+
+
 # Login stuff
 
 
