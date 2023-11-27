@@ -15,8 +15,19 @@ class Category(Enum):
     salad = "salad"
 
 
+class Weekday(Enum):
+    sunday = "sunday"
+    monday = "monday"
+    tuesday = "tuesday"
+    wednesday = "wednesday"
+    thursday = "thursday"
+    friday = "friday"
+    saturday = "saturday"
+
+
 class AccountDTO(SQLModel):
     email: str = Field(primary_key=True)
+    name: str
     followable: bool = Field(default=False)
 
 
@@ -56,7 +67,11 @@ class MealPlan(SQLModel, table=True):
     email: str = Field(foreign_key="account.email")
 
 
-class MealPlanDay(SQLModel, table=True):
+class MealPlanDayDTO(SQLModel):
+    weekday: Weekday
+    mealName: str
+
+
+class MealPlanDay(MealPlanDayDTO, table=True):
     dayID: Optional[int] = Field(default=None, primary_key=True)
-    mealID: int = Field(foreign_key="meal.mealID")
     mealPlanID: int = Field(foreign_key="mealplan.mealPlanID")
