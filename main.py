@@ -141,6 +141,8 @@ async def add_meals(
     meal_rec = [Meal(email=account.email, **m.dict()) for m in meals]
     sess.add_all(meal_rec)
 
+    sess.commit()
+
     return meal_rec
 
 
@@ -158,6 +160,8 @@ async def delete_meals(
 
         sess.delete(meal)
 
+    sess.commit()
+
 
 @app.put("/meal", response_model=list[Meal])
 async def update_meals(
@@ -172,6 +176,8 @@ async def update_meals(
             raise HTTPException(401, "User does not own meal")
 
         sess.add(meal)
+
+    sess.commit()
 
     return meals
 
