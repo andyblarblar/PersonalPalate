@@ -65,7 +65,7 @@ async def follow(
     """Follows another user, if allowed"""
 
     other_acc = sess.exec(
-        select(Account).where(Account.email == email).where(Account.followable)
+        select(Account).where(Account.email == email.email).where(Account.followable)
     ).first()
 
     if not other_acc:
@@ -76,11 +76,11 @@ async def follow(
     if sess.exec(
         select(Follow)
         .where(Follow.followingEmail == account.email)
-        .where(Follow.email == email)
+        .where(Follow.email == email.email)
     ).first():
         raise HTTPException(200, "Account is already following")
 
-    f = Follow(followingEmail=account.email, email=email)
+    f = Follow(followingEmail=account.email, email=email.email)
     sess.add(f)
     sess.commit()
 
@@ -98,7 +98,7 @@ async def unfollow(
     f = sess.exec(
         select(Follow)
         .where(Follow.followingEmail == account.email)
-        .where(Follow.email == email)
+        .where(Follow.email == email.email)
     ).first()
 
     if not f:
