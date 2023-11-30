@@ -46,25 +46,21 @@ def on_startup():
 @app.get("/")
 async def root(
     request: Request,
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    sess: Annotated[Session, Depends(db_session)]
+    account: Annotated[AccountDTO, Depends(get_current_user)]
 ):
     """Home landing page for signed in users"""
 
-    name = sess.exec(
-        select(Account)
-        .
-    ).first()
-
-    return templates.TemplateResponse("home.html.jinja", {"request": request})
+    return templates.TemplateResponse("home.html.jinja", {"request": request, "name": account.name})
 
 
 @app.get("/test")
 async def test_page(
-    request: Request
+    request: Request,
+    account: Annotated[AccountDTO, Depends(get_current_user)]
 ):
     """Testing page for new pages in development"""
-    return templates.TemplateResponse("new.home.html.jinja", {"request": request})
+    today = datetime.datetime.now().strftime("%Y-%m-%d")
+    return templates.TemplateResponse("new.home.html.jinja", {"request": request, "name": account.name, "today": today})
 
 
 class FollowData(BaseModel):
