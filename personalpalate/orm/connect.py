@@ -2,10 +2,21 @@ from sqlmodel import create_engine, SQLModel, Session, select
 from ..security.password import password_context
 from .model import *  # Required to create tables
 
-sqlite_file_name = "db.sqlite"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
-
-engine = create_engine(sqlite_url, echo=True, connect_args={"check_same_thread": False})
+# Attempt to connect to school db, use sqlite otherwise
+try:
+    # Private file containing password
+    url = open('connect_str.txt').readline()
+    connect_args = {}
+    engine = create_engine(url, echo=True, connect_args=connect_args, pool_recycle=3600)
+    # Test
+    engine.connect().close()
+    print("using mysql")
+except Exception as e:
+    print(f"using sqlite, mysql failed with: {e}")
+    sqlite_file_name = "db.sqlite"
+    url = f"sqlite:///{sqlite_file_name}"
+    connect_args = {"check_same_thread": False}
+    engine = create_engine(url, echo=True, connect_args=connect_args)
 
 
 def prepare_db():

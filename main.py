@@ -76,7 +76,7 @@ async def follow(
     """Follows another user, if allowed"""
 
     other_acc = sess.exec(
-        select(Account).where(Account.email == email).where(Account.followable)
+        select(Account).where(Account.email == email.email).where(Account.followable)
     ).first()
 
     if not other_acc:
@@ -87,11 +87,11 @@ async def follow(
     if sess.exec(
         select(Follow)
         .where(Follow.followingEmail == account.email)
-        .where(Follow.email == email)
+        .where(Follow.email == email.email)
     ).first():
         raise HTTPException(200, "Account is already following")
 
-    f = Follow(followingEmail=account.email, email=email)
+    f = Follow(followingEmail=account.email, email=email.email)
     sess.add(f)
     sess.commit()
 
@@ -109,7 +109,7 @@ async def unfollow(
     f = sess.exec(
         select(Follow)
         .where(Follow.followingEmail == account.email)
-        .where(Follow.email == email)
+        .where(Follow.email == email.email)
     ).first()
 
     if not f:
@@ -364,6 +364,27 @@ async def persist_recommend(
     sess.add_all(days)
 
     sess.commit()
+
+
+@app.get("/recommend", response_model=list[RecommendationConfirmData])
+async def get_persisted_plans(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+):
+    """Gets all past meal plans the user has saved"""
+    all_plans = sess.exec(select(MealPlan).where(MealPlan.email == account.email)).all()
+
+    out = []
+    for plan in all_plans:
+        days = sess.exec(
+            select(MealPlanDay).where(MealPlanDay.mealPlanID == plan.mealPlanID)
+        ).all()
+
+        days = [MealPlanDayDTO.from_orm(d) for d in days]
+        date = plan.mealPlanDate
+        out.append(RecommendationConfirmData(days=days, date=date))
+
+    return out
 
 
 # Login stuff
