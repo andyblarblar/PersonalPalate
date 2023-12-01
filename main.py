@@ -200,11 +200,10 @@ async def get_meals(
     return meals
 
 
-def create_recc(
-    sess: Session, account: AccountDTO, category: Category
-) -> Optional[str]:
-    """Creates a recommendation for a single day for a user. Returns meal name, or none if user has no meals in
-    category"""
+def get_followed_meals(
+    sess: Session, account: AccountDTO, category: Optional[Category]
+) -> list[Meal]:
+    """Gets all meals for this user and their followed users, for a given category"""
     # Create a list of all emails meals can be from
     followers = sess.exec(
         select(Follow).where(Follow.followingEmail == account.email)
@@ -213,11 +212,32 @@ def create_recc(
     follower_ids.append(account.email)
 
     # All meals from this user or followers, of a given category
-    meals = sess.exec(
-        select(Meal)
-        .where(Meal.email.in_(follower_ids))
-        .where(Meal.category == category)
-    ).all()
+    meals_q = select(Meal).where(Meal.email.in_(follower_ids))
+
+    if category:
+        meals_q = meals_q.where(Meal.category == category)
+
+    return sess.exec(meals_q).all()
+
+
+@app.get("/meal/followed", response_model=list[Meal])
+async def get_meals_with_follower(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+    category: Optional[Category] = None,
+):
+    """Gets all meals from the users account, and followed accounts. Optionally filters by category"""
+
+    return get_followed_meals(sess, account, category)
+
+
+def create_recc(
+    sess: Session, account: AccountDTO, category: Category
+) -> Optional[str]:
+    """Creates a recommendation for a single day for a user. Returns meal name, or none if user has no meals in
+    category"""
+
+    meals = get_followed_meals(sess, account, category)
 
     if len(meals) == 0:
         return None
