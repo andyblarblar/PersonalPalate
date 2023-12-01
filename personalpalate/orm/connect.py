@@ -5,7 +5,7 @@ from .model import *  # Required to create tables
 # Attempt to connect to school db, use sqlite otherwise
 try:
     # Private file containing password
-    url = open('connect_str.txt').readline()
+    url = open("connect_str.txt").readline()
     connect_args = {}
     engine = create_engine(url, echo=True, connect_args=connect_args, pool_recycle=3600)
     # Test
@@ -26,7 +26,7 @@ def prepare_db():
     with Session(engine) as sess:
         # Only generate once
         if not sess.exec(
-                select(Account).where(Account.email == "avealov@umich.edu")
+            select(Account).where(Account.email == "avealov@umich.edu")
         ).first():
             a1 = Account(
                 email="avealov@umich.edu",
@@ -89,146 +89,4 @@ def prepare_db():
             sess.add(m2)
             sess.add(m3)
             sess.add(m4)
-            sess.commit()
-
-            i1a = Ingredients(
-                mealID=m1.mealID,
-                ingredient="chicken",
-                quantity=8,
-                unit="oz"
-            )
-            i1b = Ingredients(
-                mealID=m1.mealID,
-                ingredient="rice",
-                quantity=1,
-                unit="cup"
-            )
-            i2a = Ingredients(
-                mealID=m2.mealID,
-                ingredient="chicken",
-                quantity=8,
-                unit="oz"
-            )
-            i2b = Ingredients(
-                mealID=m2.mealID,
-                ingredient="brocolli",
-                quantity=4,
-                unit="oz"
-            )
-            i3a = Ingredients(
-                mealID=m3.mealID,
-                ingredient="macaroni",
-                quantity=4,
-                unit="oz"
-            )
-            i3b = Ingredients(
-                mealID=m3.mealID,
-                ingredient="shredded cheese",
-                quantity=2,
-                unit="oz"
-            )
-            i4a = Ingredients(
-                mealID=m4.mealID,
-                ingredient="romaine lettuce",
-                quantity=100,
-                unit="grams",
-            )
-            i4b = Ingredients(
-                mealID=m4.mealID,
-                ingredient="croutons",
-                quantity=30,
-                unit="grams"
-
-            )
-            i4c = Ingredients(
-                mealID=m4.mealID,
-                ingredient="salad dressing",
-                quantity=2,
-                unit="tablespoons",
-            )
-            sess.add(i1a)
-            sess.add(i1b)
-            sess.add(i2a)
-            sess.add(i2b)
-            sess.add(i3a)
-            sess.add(i3b)
-            sess.add(i4a)
-            sess.add(i4b)
-            sess.add(i4c)
-            mp1 = MealPlan(mealPlanDate=date(2023, 11, 12), email=a2.email)
-            mp2 = MealPlan(mealPlanDate=date(2023, 11, 19), email=a2.email)
-            sess.add(mp1)
-            sess.add(mp2)
-            sess.commit()
-
-            d1 = MealPlanDay(mealID=m1.mealID,
-                             mealPlanID=mp1.mealPlanID,
-                             mealName=m1.mealName,
-                             weekday="monday")
-            d2 = MealPlanDay(mealID=m2.mealID,
-                             mealPlanID=mp1.mealPlanID,
-                             mealName=m2.mealName,
-                             weekday="wednesday")
-            d3 = MealPlanDay(mealID=m1.mealID,
-                             mealPlanID=mp1.mealPlanID,
-                             mealName=m1.mealName,
-                             weekday="tuesday")
-            d4 = MealPlanDay(mealID=m1.mealID,
-                             mealPlanID=mp1.mealPlanID,
-                             mealName=m1.mealName,
-                             weekday="thursday")
-            d5 = MealPlanDay(mealID=m2.mealID,
-                             mealPlanID=mp1.mealPlanID,
-                             mealName=m2.mealName,
-                             weekday="friday")
-            d6 = MealPlanDay(mealID=m1.mealID,
-                             mealPlanID=mp1.mealPlanID,
-                             mealName=m1.mealName,
-                             weekday="sunday")
-            d7 = MealPlanDay(mealID=m2.mealID,
-                             mealPlanID=mp1.mealPlanID,
-                             mealName=m2.mealName,
-                             weekday="saturday")
-            d8 = MealPlanDay(mealID=m2.mealID,
-                             mealPlanID=mp2.mealPlanID,
-                             mealName=m2.mealName,
-                             weekday="monday")
-            d9 = MealPlanDay(mealID=m1.mealID,
-                             mealPlanID=mp2.mealPlanID,
-                             mealName=m1.mealName,
-                             weekday="saturday")
-            d10 = MealPlanDay(mealID=m4.mealID,
-                              mealPlanID=mp2.mealPlanID,
-                              mealName=m4.mealName,
-                              weekday="sunday")
-            d11 = MealPlanDay(mealID=m1.mealID,
-                              mealPlanID=mp2.mealPlanID,
-                              mealName=m1.mealName,
-                              weekday="tuesday")
-            d12 = MealPlanDay(mealID=m4.mealID,
-                              mealPlanID=mp2.mealPlanID,
-                              mealName=m4.mealName,
-                              weekday="wednesday")
-            d13 = MealPlanDay(mealID=m2.mealID,
-                              mealPlanID=mp2.mealPlanID,
-                              mealName=m2.mealName,
-                              weekday="friday")
-            d14 = MealPlanDay(mealID=m1.mealID,
-                              mealPlanID=mp2.mealPlanID,
-                              mealName=m1.mealName,
-                              weekday="thursday")
-            sess.add(d1)
-            sess.add(d2)
-            sess.add(d3)
-            sess.add(d4)
-            sess.add(d5)
-            sess.add(d6)
-            sess.add(d7)
-            sess.add(d8)
-            sess.add(d9)
-            sess.add(d10)
-            sess.add(d11)
-            sess.add(d12)
-            sess.add(d13)
-            sess.add(d14)
             sess.commit()

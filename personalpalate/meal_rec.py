@@ -1,20 +1,23 @@
 from collections import Counter, defaultdict
-from datetime import date, datetime, timedelta
+from datetime import timedelta
+import datetime
 import random
 from .orm.model import MealDTO
 
-"""
-# Function to construct the probability mass function for the dataset
-# Parameters
-#   - meals (type: list[meal class objects]): list of meals in a user's dataset
-#   - past_choices (type: list[tuple[str, datetime.date]]): list containing each meal chosen and the date chosen
-# Returns: meal_selection (type: string): selected meal from PMF
-"""
-
 
 def construct_pmf(
-    meals: list[MealDTO], past_choices: list[tuple[str, datetime.date]]
+    meals: list[MealDTO],
+    past_choices: list[tuple[str, datetime.date]],
+    date: datetime.date,
 ) -> str:
+    """
+    # Function to construct the probability mass function for the dataset
+    # Parameters
+    #   - meals (type: list[meal class objects]): list of meals in a user's dataset
+    #   - past_choices (type: list[tuple[str, datetime.date]]): list containing each meal chosen and the date chosen
+    # Returns: meal_selection (type: string): selected meal from PMF
+    """
+
     # frequency of each mealName in the dataset
     freq = Counter(m.mealName for m in meals)
     total_count = len(meals)
@@ -24,7 +27,7 @@ def construct_pmf(
 
     # apply recency_weight
     for meal_name, meal_date in past_choices:
-        recency_weight = 1 / (date.today() - meal_date)
+        recency_weight = 1 / (date - meal_date)
 
         # taking n-th root of probability - as distance increases, n increases
         pmf[meal_name] = pmf[meal_name] ** recency_weight
@@ -44,7 +47,7 @@ def construct_pmf(
 
     # apply seasonal weight
     for meal in average_day_meal:
-        difference_date = (date.today() - timedelta(days=average_day_meal[meal]))
+        difference_date = date - timedelta(days=average_day_meal[meal])
         distance = difference_date.timetuple().tm_yday
         seasonal_weight = 1 / distance
         pmf[meal] *= seasonal_weight
