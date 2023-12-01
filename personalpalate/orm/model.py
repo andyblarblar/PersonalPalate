@@ -15,16 +15,6 @@ class Category(Enum):
     salad = "salad"
 
 
-class Weekday(Enum):
-    sunday = "sunday"
-    monday = "monday"
-    tuesday = "tuesday"
-    wednesday = "wednesday"
-    thursday = "thursday"
-    friday = "friday"
-    saturday = "saturday"
-
-
 class AccountDTO(SQLModel):
     email: str = Field(primary_key=True)
     name: str
@@ -53,25 +43,11 @@ class Meal(MealDTO, table=True):
     email: str = Field(foreign_key="account.email")
 
 
-class Ingredients(SQLModel, table=True):
-    ingredientID: Optional[int] = Field(default=None, primary_key=True)
-    mealID: int = Field(foreign_key="meal.mealID")
-    ingredient: str
-    quantity: float
-    unit: str
-
-
-class MealPlan(SQLModel, table=True):
-    mealPlanID: Optional[int] = Field(default=None, primary_key=True)
-    mealPlanDate: date
-    email: str = Field(foreign_key="account.email")
-
-
 class MealPlanDayDTO(SQLModel):
-    weekday: Weekday
+    mealPlanDate: date
     mealName: str
 
 
 class MealPlanDay(MealPlanDayDTO, table=True):
-    dayID: Optional[int] = Field(default=None, primary_key=True)
-    mealPlanID: int = Field(foreign_key="mealplan.mealPlanID")
+    email: str = Field(foreign_key="account.email")
+    __table_args__ = (PrimaryKeyConstraint("email", "mealPlanDate"),)
