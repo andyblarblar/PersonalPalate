@@ -49,18 +49,16 @@ async def root(
     account: Annotated[AccountDTO, Depends(get_current_user)]
 ):
     """Home landing page for signed in users"""
-
-    return templates.TemplateResponse("home.html.jinja", {"request": request, "name": account.name})
+    today = datetime.datetime.now().strftime("%Y-%m-%d")
+    return templates.TemplateResponse("home.html.jinja", {"request": request, "name": account.name, "today": today})
 
 
 @app.get("/test")
 async def test_page(
     request: Request,
-    account: Annotated[AccountDTO, Depends(get_current_user)]
 ):
     """Testing page for new pages in development"""
-    today = datetime.datetime.now().strftime("%Y-%m-%d")
-    return templates.TemplateResponse("new.home.html.jinja", {"request": request, "name": account.name, "today": today})
+    return templates.TemplateResponse("home.html.jinja", {"request": request})
 
 
 class FollowData(BaseModel):
