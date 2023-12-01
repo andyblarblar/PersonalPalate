@@ -226,6 +226,7 @@
             <span class="title-text">Welcome back, {{ name }}</span>
         </div>
     </div>
+    <div class="calendar"></div>
     <div class="container">
         <div class="container-blue-bar"></div>
         <div class="actions-content">
@@ -235,60 +236,15 @@
                 <div class="button">View Following</div>
                 <div class="button">Edit Settings</div>
                 <div class="button">Add Recipe(s)</div>
-                <div class="button" id="createMealPlan">Create Meal Plan</div>
                 <div class="button" id="logout">Logout</div>
             </div>
         </div>
     </div>
-    <div class="meals-container">
-        <div class="button" id="createMealPlan2">No meals yet? Generate a meal plan!</div>
-    </div>
-    <div class="modal" id="mealModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="close">&times;</span>
-                <h3>Create a meal plan!</h3>
-            </div>
-            <div class="modal-body">
-                <p class="info-text">Select a meal category for each day!</p>
-                <div class="category-inputs">
-                    <div class="custom-dropdown">
-                        <label for="dropdown-input">Monday</label>
-                        <input type="text" id="dropdown-input" placeholder="Select or type">
-                        <ul class="dropdown-list" id="dropdown-options"></ul>
-                    </div>
-                    <div class="custom-dropdown">
-                        <label for="dropdown-input">Tuesday</label>
-                        <input type="text" id="dropdown-input" placeholder="Select or type">
-                        <ul class="dropdown-list" id="dropdown-options"></ul>
-                    </div>
-                    <div class="custom-dropdown">
-                        <label for="dropdown-input">Wednesday</label>
-                        <input type="text" id="dropdown-input" placeholder="Select or type">
-                        <ul class="dropdown-list" id="dropdown-options"></ul>
-                    </div>
-                    <div class="custom-dropdown">
-                        <label for="dropdown-input">Thursday</label>
-                        <input type="text" id="dropdown-input" placeholder="Select or type">
-                        <ul class="dropdown-list" id="dropdown-options"></ul>
-                    </div>
-                    <div class="custom-dropdown">
-                        <label for="dropdown-input">Friday</label>
-                        <input type="text" id="dropdown-input" placeholder="Select or type">
-                        <ul class="dropdown-list" id="dropdown-options"></ul>
-                    </div>
-                    <div class="custom-dropdown">
-                        <label for="dropdown-input">Saturday</label>
-                        <input type="text" id="dropdown-input" placeholder="Select or type">
-                        <ul class="dropdown-list" id="dropdown-options"></ul>
-                    </div>
-                    <div class="custom-dropdown">
-                        <label for="dropdown-input">Sunday</label>
-                        <input type="text" id="dropdown-input" placeholder="Select or type">
-                        <ul class="dropdown-list" id="dropdown-options"></ul>
-                    </div>
-                </div>
-            </div>
+    <div class="meals-container container">
+        <div class="container-blue-bar"></div>
+        <div class="meals-content">
+            <div class="title-text" id="selectedDate"></div>
+
         </div>
     </div>
 </div>

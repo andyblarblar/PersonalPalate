@@ -73,6 +73,19 @@ body {
 
   /* Effects */
   --shadow-card: 0px 7px 20px rgba(40, 41, 61, 0.08);
+
+  /* Calendar Variables */
+  --calendar-bg-color: white;
+  --calendar-font-color: var(--grey-500);
+  --weekdays-border-bottom-color: var(--grey-200);
+  --calendar-date-hover-color: #505050;
+  --calendar-current-date-color: var(--grey-200);
+  --calendar-today-color: linear-gradient(to bottom, #03a9f4, #2196f3);
+  --calendar-today-innerborder-color: transparent;
+  --calendar-nextprev-bg-color: transparent;
+  --next-prev-arrow-color : var(--grey-500);
+  --calendar-border-radius: 16px;
+  --calendar-prevnext-date-color: var(--grey-300);
 }
 
 .date-icon-container {
