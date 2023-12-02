@@ -10,10 +10,30 @@ mealForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
   const selectedCategory = document.getElementById("categories").value;
-  console.log("User chose the", selectedCategory, "category");
+  getRecommendation(selectedCategory).then((plan) => {
+    const recommendedMeal = plan.mealName;
+    const shouldSaveMeal = confirm(`Recommended Meal: ${recommendedMeal}. Select OK to save or Cancel to discard the recommendation.`);
 
-
+    if (shouldSaveMeal) {
+      let _ = saveMeal(plan);
+      configureMealsContainer();
+    }
+  });
 });
+
+async function saveMeal(mealPlan) {
+  console.log(mealPlan);
+  const response = await fetch("/plans", {
+    method: "PUT",
+    body: mealPlan
+  });
+
+  if (response.ok) {
+    alert("Meal saved successfully!");
+  } else {
+    alert(`Meal failed to save with error: ${await response.text()}`)
+  }
+}
 
 async function getRecommendation(category) {
   let url = `/recommend?day=${document.getElementById("selectedDate").innerText}`
@@ -21,14 +41,7 @@ async function getRecommendation(category) {
 
   const response = await fetch(url);
 
-  const recommendation = await response.json();
-  console.log(recommendation);
-}
-
-async function createMealPlan() {
-    // Need to add functionality to create a meal plan
-    const categories = await getCategories();
-    console.log("Meal Categories:", categories);
+  return await response.json();
 }
 
 async function getCategories() {
@@ -46,14 +59,18 @@ async function getCategories() {
 
 async function getMealPlan(date) {
   // Accepts date in yyyy-mm-dd format
+  console.log("Getting meal plan for date:", date);
   try {
     const response = await fetch("/plans");
     const data = await response.json();
 
+    let existingPlan = null;
     data.forEach((plan) => {
-      if (plan.mealPlanDate === date) return plan;
+      if (plan.mealPlanDate === date) {
+        existingPlan = plan;
+      }
     });
-    return null;
+    return existingPlan;
   }
   catch (error) {
     console.error("Error fetching meal plans:", error)
@@ -100,6 +117,7 @@ async function configureMealsContainer() {
 
 function setCategories(categories) {
   const categoriesDropdown = document.getElementById("categories");
+  if (categoriesDropdown.childElementCount > 1) return;
 
   categories.forEach(function (category) {
     let option = document.createElement("option");
@@ -191,11 +209,6 @@ function CalendarControl() {
         calendarControl.selectedDate = date;
         calendarControl.highlightDate(date);
 
-        console.log(
-          `${e.target.textContent} ${
-            calendarControl.calMonthName[calendar.getMonth()]
-          } ${calendar.getFullYear()}`
-        );
       },
       plotSelectors: function () {
         document.querySelector(
