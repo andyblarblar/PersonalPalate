@@ -47,8 +47,7 @@ async def root(
     account: Annotated[AccountDTO, Depends(get_current_user)]
 ):
     """Home landing page for signed in users"""
-    today = datetime.datetime.now().strftime("%Y-%m-%d")
-    return templates.TemplateResponse("home.html.jinja", {"request": request, "name": account.name, "today": today})
+    return templates.TemplateResponse("home.html.jinja", {"request": request, "name": account.name})
 
 
 @app.get("/test")

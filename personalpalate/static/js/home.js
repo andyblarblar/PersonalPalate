@@ -22,10 +22,17 @@ mealForm.addEventListener("submit", (event) => {
 });
 
 async function saveMeal(mealPlan) {
-  console.log(mealPlan);
+  const data = {
+    "mealPlanDate": mealPlan.mealPlanDate,
+    "mealName": mealPlan.mealName
+  }
+  let string = JSON.stringify(data);
   const response = await fetch("/plans", {
     method: "PUT",
-    body: mealPlan
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: string
   });
 
   if (response.ok) {
