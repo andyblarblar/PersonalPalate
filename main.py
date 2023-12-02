@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from sqlalchemy import update, delete
 from sqlmodel import SQLModel, Session, select
 from starlette import status
 from starlette.responses import RedirectResponse
@@ -91,7 +92,10 @@ async def unfollow(
     account: Annotated[AccountDTO, Depends(get_current_user)],
     email: FollowData,
 ):
-    """Unfollows another user"""
+    """
+    Unfollows another user. Plans made using that users meals will still exist, but will however not be considered in
+    the recommendations.
+    """
 
     f = sess.exec(
         select(Follow)
@@ -148,39 +152,68 @@ async def add_meals(
 async def delete_meals(
     sess: Annotated[Session, Depends(db_session)],
     account: Annotated[AccountDTO, Depends(get_current_user)],
-    meals: list[Meal],
+    meal: Meal,
 ):
-    """Deletes many meals from the users account"""
+    """
+    Deletes a meal from the users account. If this removes all copies of a meal, then mealplans using it will still
+    exist. However, they will not be considered for recommendation.
+    """
 
-    for meal in meals:
-        if meal.email != account.email:
-            raise HTTPException(401, "User does not own meal")
+    if meal.email != account.email:
+        raise HTTPException(401, "User does not own meal")
 
-        sess.delete(meal)
-
+    sess.delete(sess.get(Meal, meal.mealID))
     sess.commit()
 
 
-@app.put("/meal", response_model=list[Meal])
-async def update_meals(
+@app.put("/meal", response_model=Meal)
+async def update_meal(
     sess: Annotated[Session, Depends(db_session)],
     account: Annotated[AccountDTO, Depends(get_current_user)],
-    meals: list[Meal],
+    meal: Meal,
 ):
-    """Updates many meals from the users account"""
+    """
+    Updates a users meal. If the meal name is changed and this was the last copy of a meal, all mealplans with the same
+    meal name will also be renamed to match.
+    """
 
-    for meal in meals:
-        if meal.email != account.email:
-            raise HTTPException(401, "User does not own meal")
+    if meal.email != account.email:
+        raise HTTPException(401, "User does not own meal")
 
-        db_meal = sess.get(Meal, meal.mealID)
-        for key, value in meal.dict().items():
-            setattr(db_meal, key, value)
-        sess.add(db_meal)
+    db_meal = sess.get(Meal, meal.mealID)
+    old_meal_name = db_meal.mealName
 
+    for key, value in meal.dict().items():
+        setattr(db_meal, key, value)
+    sess.add(db_meal)
     sess.commit()
 
-    return meals
+    emails = [
+        a.followingEmail
+        for a in sess.exec(select(Follow).where(Follow.email == account.email)).all()
+    ] + [account.email]
+
+    # If the meal name has changed such that no meals with that name exist, migrate meal plans to the new name
+    for email in emails:
+        if (
+            len(
+                sess.exec(
+                    create_followed_meals_expr(sess, email, None).where(
+                        Meal.mealName == old_meal_name
+                    )
+                ).all()
+            )
+            == 0
+        ):
+            sess.execute(
+                update(MealPlanDay)
+                .where(MealPlanDay.email == email)
+                .where(MealPlanDay.mealName == old_meal_name)
+                .values(mealName=meal.mealName)
+            )
+
+    sess.commit()
+    return meal
 
 
 @app.get("/meal", response_model=list[Meal])
@@ -201,16 +234,12 @@ async def get_meals(
     return meals
 
 
-def get_followed_meals(
-    sess: Session, account: AccountDTO, category: Optional[Category]
-) -> list[Meal]:
-    """Gets all meals for this user and their followed users, for a given category"""
+def create_followed_meals_expr(sess: Session, email: str, category: Optional[Category]):
+    """Creates a Sqlmodel expression that gets all meals for this user and their followed users, for a given category"""
     # Create a list of all emails meals can be from
-    followers = sess.exec(
-        select(Follow).where(Follow.followingEmail == account.email)
-    ).all()
+    followers = sess.exec(select(Follow).where(Follow.followingEmail == email)).all()
     follower_ids = [f.email for f in followers]
-    follower_ids.append(account.email)
+    follower_ids.append(email)
 
     # All meals from this user or followers, of a given category
     meals_q = select(Meal).where(Meal.email.in_(follower_ids))
@@ -218,7 +247,15 @@ def get_followed_meals(
     if category:
         meals_q = meals_q.where(Meal.category == category)
 
-    return sess.exec(meals_q).all()
+    return meals_q
+
+
+def get_followed_meals(
+    sess: Session, account: AccountDTO, category: Optional[Category]
+) -> list[Meal]:
+    """Gets all meals for this user and their followed users, for a given category"""
+
+    return sess.exec(create_followed_meals_expr(sess, account.email, category)).all()
 
 
 @app.get("/meal/followed", response_model=list[Meal])

@@ -27,7 +27,12 @@ def construct_pmf(
 
     # apply recency_weight
     for meal_name, meal_date in past_choices:
-        recency_weight = 1 / (date - meal_date)
+        # Meal plans can reference deleted meals, so just skip them if that is the case as we should only recommend
+        # meals in the input dataset.
+        if meal_name not in pmf:
+            continue
+
+        recency_weight = 1 / max(float((date - meal_date).days), 0.01)
 
         # taking n-th root of probability - as distance increases, n increases
         pmf[meal_name] = pmf[meal_name] ** recency_weight
@@ -59,6 +64,7 @@ def construct_pmf(
     for meal_name in pmf:
         pmf[meal_name] /= total_probability
 
+    print(pmf)
     # select a meal based on the probability
     meal_selection = random.choices(list(pmf.keys()), weights=list(pmf.values()), k=1)[
         0
