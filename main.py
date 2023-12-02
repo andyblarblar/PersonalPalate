@@ -173,7 +173,10 @@ async def update_meals(
         if meal.email != account.email:
             raise HTTPException(401, "User does not own meal")
 
-        sess.add(meal)
+        db_meal = sess.get(Meal, meal.mealID)
+        for key, value in meal.dict().items():
+            setattr(db_meal, key, value)
+        sess.add(db_meal)
 
     sess.commit()
 
@@ -281,7 +284,18 @@ async def update_plan(
 ):
     """Persists a chosen mealplan day, or overwrites an existing one"""
 
-    sess.add(MealPlanDay(email=account.email, **chosen.dict()))
+    # Update plan if exists
+    old_plan = sess.exec(
+        select(MealPlanDay)
+        .where(MealPlanDay.email == account.email)
+        .where(MealPlanDay.mealPlanDate)
+    ).one_or_none()
+
+    if old_plan:
+        for key, value in chosen.dict(exclude_unset=True).items():
+            setattr(old_plan, key, value)
+
+    sess.add(old_plan or MealPlanDay(email=account.email, **chosen.dict()))
     sess.commit()
 
     return chosen
