@@ -56,9 +56,11 @@ def prepare_db():
             sess.add(a3)
             sess.add(a4)
             f1 = Follow(
-                email="smileyjo@umich.edu", followingEmail="joeysmiley33@gmail.com"
+                email="avealov@umich.edu", followingEmail="joeysmiley33@gmail.com"
             )
-            f2 = Follow(email="smileyjo@umich.edu", followingEmail="joey@gmail.com")
+            f2 = Follow(
+                email="avealov@umich.edu", followingEmail="joey@gmail.com"
+            )
             sess.add(f1)
             sess.add(f2)
             m1 = Meal(
@@ -85,8 +87,86 @@ def prepare_db():
                 category="salad",
                 dateMade=date(2023, 11, 6),
             )
+            m5 = Meal(
+                email=a1.email,
+                mealName="Pizza",
+                category="salad",
+                dateMade=date(2023, 11, 6),
+            )
+            m6 = Meal(
+                email=a1.email,
+                mealName="Pasta and Garlic Bread",
+                category="pasta",
+                dateMade=date(2023, 11, 7),
+            )
+            m7 = Meal(
+                email=a1.email,
+                mealName="Turkey Sandwich",
+                category="other meat",
+                dateMade=date(2023, 11, 8),
+            )
+            m8 = Meal(
+                email=a1.email,
+                mealName="Beef Potroast",
+                category="beef",
+                dateMade=date(2023, 11, 10),
+            )
+            m9 = Meal(
+                email=a1.email,
+                mealName="Lasagna",
+                category="pasta",
+                dateMade=date(2023, 11, 11),
+            )
+            m10 = Meal(
+                email=a1.email,
+                mealName="Fish and Chips",
+                category="seafood",
+                dateMade=date(2023, 11, 14),
+            )
+            m11 = Meal(
+                email=a1.email,
+                mealName="Cheeseburger",
+                category="beef",
+                dateMade=date(2023, 11, 18),
+            )
+            m12 = Meal(
+                email=a1.email,
+                mealName="Beef Tacos",
+                category="beef",
+                dateMade=date(2023, 11, 20),
+            )
+            m13 = Meal(
+                email=a1.email,
+                mealName="Steak and Salad",
+                category="beef",
+                dateMade=date(2023, 11, 23),
+            )
+            m14 = Meal(
+                email=a1.email,
+                mealName="Hotdogs and Fries",
+                category="other meat",
+                dateMade=date(2023, 11, 24),
+            )
+            m15 = Meal(
+                email=a1.email,
+                mealName="Meatloaf",
+                category="beef",
+                dateMade=date(2023, 11, 29),
+            )
+
             sess.add(m1)
             sess.add(m2)
             sess.add(m3)
             sess.add(m4)
+            sess.add(m5)
+            sess.add(m6)
+            sess.add(m7)
+            sess.add(m8)
+            sess.add(m9)
+            sess.add(m10)
+            sess.add(m11)
+            sess.add(m12)
+            sess.add(m13)
+            sess.add(m14)
+            sess.add(m15)
             sess.commit()
