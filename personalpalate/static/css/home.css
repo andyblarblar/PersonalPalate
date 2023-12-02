@@ -286,6 +286,30 @@
 }
 
 .meals-content {
-    padding-top: 16%;
+    padding-top: 8%;
     position: relative;
+    min-width: 200px;
+    min-height: 150px;
+    margin: 5px;
+}
+
+.meals-content .title-text {
+    position: relative;
+    top: -14px;
+}
+
+.meal-text {
+    font-size: 16px;
+    color: var(--color-gray-100);
+}
+
+.meals-content label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--grey-500);
+}
+
+.form-button {
+    border-radius: 15px;
+    padding: 5px;
 }

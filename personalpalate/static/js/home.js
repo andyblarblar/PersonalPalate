@@ -1,14 +1,34 @@
 const logout = document.getElementById("logout");
 const mealDate = document.getElementById("selectedDate");
+const mealForm = document.getElementById("recommendation");
 
 logout.addEventListener("click", () => {
     window.location = '/logout';
 });
 
+mealForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const selectedCategory = document.getElementById("categories").value;
+  console.log("User chose the", selectedCategory, "category");
+
+
+});
+
+async function getRecommendation(category) {
+  let url = `/recommend?day=${document.getElementById("selectedDate").innerText}`
+  if (category !== "any") url += category;
+
+  const response = await fetch(url);
+
+  const recommendation = await response.json();
+  console.log(recommendation);
+}
+
 async function createMealPlan() {
     // Need to add functionality to create a meal plan
     const categories = await getCategories();
-    console.log("Meal Categories: ", categories);
+    console.log("Meal Categories:", categories);
 }
 
 async function getCategories() {
@@ -19,13 +39,78 @@ async function getCategories() {
         return [...new Set(data.map(meal => meal.category))];
     }
     catch (error) {
-        console.error("Error fetching meal categories: ", error);
+        console.error("Error fetching meal categories:", error);
         return [];
     }
 }
 
-// Content below provided by https://alvarotrigo.com/blog/css-calendar/
+async function getMealPlan(date) {
+  // Accepts date in yyyy-mm-dd format
+  try {
+    const response = await fetch("/plans");
+    const data = await response.json();
 
+    data.forEach((plan) => {
+      if (plan.mealPlanDate === date) return plan;
+    });
+    return null;
+  }
+  catch (error) {
+    console.error("Error fetching meal plans:", error)
+    return null;
+  }
+}
+
+async function configureMealsContainer() {
+  /* Need to configure the meals container. There are three views:
+  * 1. The user has no meals in the system. (getCategories returns []) - Direct them to add meal instead
+  * 2. The user has meals in the system, but no meal plan is chosen for the day (getCategories returns array with length
+  * > 1, but meal plan endpoint has no meal for the date. - Direct user to generate recommendation
+  * 3. The user has meals in the system and there is a meal plan for the selected date - Option for user to regenerate
+  * the meal recommendation */
+  const categories = await getCategories();
+
+  const noMealPlan = document.getElementById("no-meal-plan");
+  const noMeals = document.getElementById("no-meals");
+  const mealPlan = document.getElementById("meal-plan");
+
+  if (categories.length === 0) {
+    // view 1
+    noMealPlan.hidden = true;
+    noMeals.hidden = false;
+    mealPlan.hidden = true;
+  } else {
+    const date = document.getElementById("selectedDate").innerText
+    getMealPlan(date).then((plan) => {
+      if (plan) {
+        // view 3
+        noMealPlan.hidden = true;
+        noMeals.hidden = true;
+        mealPlan.hidden = false;
+      } else {
+        // view 2
+        setCategories(categories);
+        noMealPlan.hidden = false;
+        noMeals.hidden = true;
+        mealPlan.hidden = true;
+      }
+    });
+  }
+}
+
+function setCategories(categories) {
+  const categoriesDropdown = document.getElementById("categories");
+
+  categories.forEach(function (category) {
+    let option = document.createElement("option");
+    const capitalized = category.charAt(0).toUpperCase() + category.slice(1);
+    option.value = category;
+    option.textContent = capitalized;
+    categoriesDropdown.appendChild(option);
+  });
+}
+
+// Content below provided by https://alvarotrigo.com/blog/css-calendar/
 function CalendarControl() {
     const calendar = new Date();
     const calendarControl = {
@@ -216,7 +301,10 @@ function CalendarControl() {
         if (
             calendarYear === year &&
             calendarMonth === month
-        ) document.querySelectorAll(".number-item")[day - 1].classList.add("calendar-today");
+        ) {
+          document.querySelectorAll(".number-item")[day - 1].classList.add("calendar-today");
+          let _ = configureMealsContainer();
+        }
 
         let monthString = `${month}`;
         monthString = monthString.padStart(2, "0");
@@ -236,6 +324,7 @@ function CalendarControl() {
           document
             .querySelectorAll(".number-item")
             [calendar.getDate() - 1].classList.add("calendar-today");
+          let _ = configureMealsContainer();
         }
 
         let monthString = `${currentMonth}`;
