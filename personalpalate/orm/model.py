@@ -45,7 +45,9 @@ class Meal(MealDTO, table=True):
 
 class MealPlanDayDTO(SQLModel):
     mealPlanDate: date
-    mealName: str
+    # Note that this mealName may reference a deleted meal record. In this case, the meal plan should stay around,
+    # but will not be used in the algorithm.
+    mealName: str = Field(foreign_key="meal.mealName")
 
 
 class MealPlanDay(MealPlanDayDTO, table=True):
