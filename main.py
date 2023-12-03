@@ -55,7 +55,7 @@ async def test_page(
     request: Request,
 ):
     """Testing page for new pages in development"""
-    return templates.TemplateResponse("home.html.jinja", {"request": request})
+    return templates.TemplateResponse("meals.html.jinja", {"request": request})
 
 
 class FollowData(BaseModel):
