@@ -1,5 +1,6 @@
 import datetime
 from typing import Annotated, Optional
+import csv
 
 from fastapi import FastAPI, Depends, HTTPException, Response, Request, Form
 from fastapi.templating import Jinja2Templates
@@ -54,10 +55,11 @@ async def root(
 
 @app.get("/meals")
 async def meals(
-    request: Request,
-    account: Annotated[AccountDTO, Depends(get_current_user)]
+    request: Request, account: Annotated[AccountDTO, Depends(get_current_user)]
 ):
-    return templates.TemplateResponse("meals.html.jinja", {"request": request, "user_email": account.email})
+    return templates.TemplateResponse(
+        "meals.html.jinja", {"request": request, "user_email": account.email}
+    )
 
 
 @app.get("/test")
@@ -103,6 +105,16 @@ async def follow(
     return f
 
 
+@app.get("/account/follow", response_model=list[Follow])
+async def get_following(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+):
+    """Returns all followed users"""
+
+    return sess.exec(select(Follow).where(Follow.followingEmail == account.email))
+
+
 @app.delete("/account/follow")
 async def unfollow(
     sess: Annotated[Session, Depends(db_session)],
@@ -127,7 +139,8 @@ async def unfollow(
 
 
 class AccountSettings(BaseModel):
-    followable: bool
+    followable: Optional[bool]
+    name: Optional[str]
 
 
 @app.put("/account/settings", response_model=AccountDTO)
@@ -138,9 +151,11 @@ async def update_settings(
 ):
     """Updates user settings"""
 
-    follow2 = settings.followable
     account = sess.get(Account, account.email)
-    account.followable = follow2
+
+    # Copy settings over
+    for k, v in settings.dict(exclude_unset=True).items():
+        setattr(account, k, v)
 
     sess.add(account)
     sess.commit()
@@ -158,6 +173,30 @@ async def add_meals(
 
     # Transform into DB model
     meal_rec = [Meal(email=account.email, **m.dict()) for m in meals]
+    sess.add_all(meal_rec)
+
+    sess.commit()
+
+    return meal_rec
+
+
+@app.post("/meal/csv", status_code=201, response_model=list[Meal])
+async def add_meals_csv(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+    meal_csv: str,
+):
+    """
+    Adds many meals to the users account from a csv. Each line should be newline seperated. This csv should have the
+    columns `mealName` `category` and `dateMade`, where date is an ISO date of form yyyy-mm-dd.
+    """
+
+    uploaded = csv.DictReader(meal_csv.splitlines())
+
+    if len(uploaded.fieldnames) < 3:
+        raise HTTPException(400, "Need header row!")
+
+    meal_rec = [Meal(email=account.email, **m) for m in uploaded]
     sess.add_all(meal_rec)
 
     sess.commit()
