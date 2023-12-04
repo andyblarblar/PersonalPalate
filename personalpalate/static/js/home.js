@@ -1,6 +1,11 @@
 const logout = document.getElementById("logout");
 const mealDate = document.getElementById("selectedDate");
 const mealForm = document.getElementById("recommendation");
+const changeMeal = document.getElementById("changeMeal");
+const modal = document.getElementById("modal");
+const closeModal = document.getElementById("close");
+const multiMeal = document.getElementById("multiMeal");
+const multiMealForm = document.getElementById("multiMealPlanForm");
 
 logout.addEventListener("click", () => {
     window.location = '/logout';
@@ -15,13 +20,79 @@ mealForm.addEventListener("submit", (event) => {
     const shouldSaveMeal = confirm(`Recommended Meal: ${recommendedMeal}. Select OK to save or Cancel to discard the recommendation.`);
 
     if (shouldSaveMeal) {
-      let _ = saveMeal(plan);
+      saveMeal(plan, true);
       configureMealsContainer();
     }
   });
 });
 
-async function saveMeal(mealPlan) {
+multiMealForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
+
+  if (!startDate || !endDate) {
+    alert("One of the dates is blank!");
+  } else {
+    const ms = Math.abs(new Date(endDate) - new Date(startDate));
+    const days = ms / 1000 / 60 / 60 / 24;
+    if (days === 0) {
+      getRecommendation("any", startDate).then((plan) => {
+        const recommendedMeal = plan.mealName;
+        const shouldSaveMeal = confirm(`Recommended Meal: ${recommendedMeal}. Select OK to save or Cancel to discard the recommendation.`);
+
+        if (shouldSaveMeal) {
+          saveMeal(plan, true);
+          configureMealsContainer();
+        }
+      });
+    }
+    let end = convertDateToUTC(new Date(endDate));
+    let loop = convertDateToUTC(new Date(startDate));
+    while (loop <= end) {
+      const date = loop.toISOString().split("T")[0];
+      getRecommendation("any", date).then((plan) => {
+        saveMeal(plan, false);
+      });
+      const newDate = loop.setDate(loop.getDate() + 1);
+      loop = new Date(newDate);
+    }
+    configureMealsContainer();
+    modal.style.display = "none";
+  }
+});
+
+changeMeal.addEventListener("click", (event) => {
+  const noMealPlan = document.getElementById("no-meal-plan");
+  const noMeals = document.getElementById("no-meals");
+  const mealPlan = document.getElementById("meal-plan");
+
+  getCategories().then((categories) => {
+    if (categories.length === 0) {
+      alert("You have no meals saved! Add meals to generate a recommendation.");
+    } else {
+      setCategories(categories);
+      noMealPlan.hidden = false;
+      noMeals.hidden = true;
+      mealPlan.hidden = true;
+    }
+  });
+});
+
+multiMeal.addEventListener("click", () => {
+  modal.style.display = "block";
+});
+
+closeModal.addEventListener("click", () => {
+  modal.style.display = "none";
+});
+
+window.onclick = function(event) {
+  if (event.target === modal) modal.style.display = "none";
+}
+
+async function saveMeal(mealPlan, informUser) {
   const data = {
     "mealPlanDate": mealPlan.mealPlanDate,
     "mealName": mealPlan.mealName
@@ -35,16 +106,21 @@ async function saveMeal(mealPlan) {
     body: string
   });
 
-  if (response.ok) {
+  if (informUser) {
+    if (response.ok) {
     alert("Meal saved successfully!");
   } else {
     alert(`Meal failed to save with error: ${await response.text()}`)
   }
+  }
 }
 
-async function getRecommendation(category) {
-  let url = `/recommend?day=${document.getElementById("selectedDate").innerText}`
-  if (category !== "any") url += category;
+async function getRecommendation(category, date) {
+  let url = "/recommend?day=";
+  if (date) {
+    url += date;
+  } else url += `${document.getElementById("selectedDate").innerText}`
+  if (category !== "any") url += "&" + category;
 
   const response = await fetch(url);
 
@@ -66,7 +142,6 @@ async function getCategories() {
 
 async function getMealPlan(date) {
   // Accepts date in yyyy-mm-dd format
-  console.log("Getting meal plan for date:", date);
   try {
     const response = await fetch("/plans");
     const data = await response.json();
@@ -103,11 +178,14 @@ async function configureMealsContainer() {
     noMealPlan.hidden = true;
     noMeals.hidden = false;
     mealPlan.hidden = true;
+    multiMeal.style.display = "none";
   } else {
+    multiMeal.style.display = "block";
     const date = document.getElementById("selectedDate").innerText
     getMealPlan(date).then((plan) => {
       if (plan) {
         // view 3
+        document.getElementById("meal").innerText = "Planned Meal: " + plan.mealName;
         noMealPlan.hidden = true;
         noMeals.hidden = true;
         mealPlan.hidden = false;
@@ -133,6 +211,11 @@ function setCategories(categories) {
     option.textContent = capitalized;
     categoriesDropdown.appendChild(option);
   });
+}
+
+function convertDateToUTC(date) {
+  return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds())
+
 }
 
 // Content below provided by https://alvarotrigo.com/blog/css-calendar/

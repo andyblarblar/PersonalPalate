@@ -333,7 +333,7 @@ async def update_plan(
     old_plan = sess.exec(
         select(MealPlanDay)
         .where(MealPlanDay.email == account.email)
-        .where(MealPlanDay.mealPlanDate)
+        .where(MealPlanDay.mealPlanDate == chosen.mealPlanDate)
     ).one_or_none()
 
     if old_plan:
