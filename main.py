@@ -8,6 +8,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy import update, delete
+from sqlalchemy.orm import aliased
 from sqlmodel import SQLModel, Session, select
 from starlette import status
 from starlette.responses import RedirectResponse
@@ -24,7 +25,6 @@ from personalpalate.orm.model import (
     Follow,
     Meal,
     MealDTO,
-    Category,
     MealPlanDay,
     MealPlanDayDTO,
 )
@@ -169,10 +169,15 @@ async def add_meals(
     account: Annotated[AccountDTO, Depends(get_current_user)],
     meals: list[MealDTO],
 ):
-    """Adds many meals to the users account"""
+    """Adds many meals to the users account. Categories are arbitrary, but are exact."""
 
     # Transform into DB model
     meal_rec = [Meal(email=account.email, **m.dict()) for m in meals]
+
+    # Clean categories
+    for meal in meal_rec:
+        meal.category = meal.category.lower().strip()
+
     sess.add_all(meal_rec)
 
     sess.commit()
@@ -198,6 +203,10 @@ async def add_meals_csv(
 
     meal_rec = [Meal(email=account.email, **m) for m in uploaded]
     sess.add_all(meal_rec)
+
+    # Clean categories
+    for meal in meal_rec:
+        meal.category = meal.category.lower().strip()
 
     sess.commit()
 
@@ -241,13 +250,14 @@ async def update_meal(
 
     for key, value in meal.dict().items():
         setattr(db_meal, key, value)
+
+    db_meal.category = db_meal.category.lower().strip()
     sess.add(db_meal)
     sess.commit()
 
-    emails = [
-        a.followingEmail
-        for a in sess.exec(select(Follow).where(Follow.email == account.email)).all()
-    ] + [account.email]
+    emails = sess.exec(
+        select(Follow.followingEmail).where(Follow.email == account.email)
+    ).all() + [account.email]
 
     # If the meal name has changed such that no meals with that name exist, migrate meal plans to the new name
     for email in emails:
@@ -276,7 +286,7 @@ async def update_meal(
 async def get_meals(
     sess: Annotated[Session, Depends(db_session)],
     account: Annotated[AccountDTO, Depends(get_current_user)],
-    category: Optional[Category] = None,
+    category: Optional[str] = None,
 ):
     """Gets all meals from the users account. Optionally filters by category"""
 
@@ -290,11 +300,32 @@ async def get_meals(
     return meals
 
 
-def create_followed_meals_expr(sess: Session, email: str, category: Optional[Category]):
+def get_user_meal_categories(sess: Session, email: str) -> list[str]:
+    """
+    Gets a list of all meal categories featured in this users meal set.
+    """
+    base_meals = create_followed_meals_expr(sess, email, None).subquery()
+    base_meals = aliased(Meal, base_meals)
+
+    return sess.exec(select(Meal.category).select_from(base_meals)).unique().all()
+
+
+@app.get("/meal/categories", response_model=list[str])
+async def get_user_categories(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+):
+    """Gets all categories featured in user meals"""
+
+    return get_user_meal_categories(sess, account.email)
+
+
+def create_followed_meals_expr(sess: Session, email: str, category: Optional[str]):
     """Creates a Sqlmodel expression that gets all meals for this user and their followed users, for a given category"""
     # Create a list of all emails meals can be from
-    followers = sess.exec(select(Follow).where(Follow.followingEmail == email)).all()
-    follower_ids = [f.email for f in followers]
+    follower_ids = sess.exec(
+        select(Follow.email).where(Follow.followingEmail == email)
+    ).all()
     follower_ids.append(email)
 
     # All meals from this user or followers, of a given category
@@ -307,7 +338,7 @@ def create_followed_meals_expr(sess: Session, email: str, category: Optional[Cat
 
 
 def get_followed_meals(
-    sess: Session, account: AccountDTO, category: Optional[Category]
+    sess: Session, account: AccountDTO, category: Optional[str]
 ) -> list[Meal]:
     """Gets all meals for this user and their followed users, for a given category"""
 
@@ -318,7 +349,7 @@ def get_followed_meals(
 async def get_meals_with_follower(
     sess: Annotated[Session, Depends(db_session)],
     account: Annotated[AccountDTO, Depends(get_current_user)],
-    category: Optional[Category] = None,
+    category: Optional[str] = None,
 ):
     """Gets all meals from the users account, and followed accounts. Optionally filters by category"""
 
@@ -329,7 +360,7 @@ def create_recc(
     sess: Session,
     account: AccountDTO,
     date: datetime.date,
-    category: Optional[Category] = None,
+    category: Optional[str] = None,
 ) -> Optional[str]:
     """Creates a recommendation for a single day for a user. Returns meal name, or none if user has no meals in
     category. Pass no category to get a random meal category."""
@@ -359,7 +390,7 @@ async def generate_recommend(
     sess: Annotated[Session, Depends(db_session)],
     account: Annotated[AccountDTO, Depends(get_current_user)],
     day: datetime.date,
-    category: Optional[Category] = None,
+    category: Optional[str] = None,
 ):
     """Creates a recommendation for a given day. Optionally filter by category."""
     result = create_recc(sess, account, day, category)

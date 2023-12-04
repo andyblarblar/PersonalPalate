@@ -5,16 +5,6 @@ from sqlalchemy import PrimaryKeyConstraint
 from enum import Enum
 
 
-class Category(Enum):
-    beef = "beef"
-    chicken = "chicken"
-    pork = "pork"
-    meat_other = "other meat"  # turkey, lamb, venison, etc.
-    seafood = "seafood"
-    pasta = "pasta"
-    salad = "salad"
-
-
 class AccountDTO(SQLModel):
     email: str = Field(primary_key=True)
     name: str
@@ -34,7 +24,7 @@ class Follow(SQLModel, table=True):
 
 class MealDTO(SQLModel):
     mealName: str
-    category: Category
+    category: str
     dateMade: date
 
 
