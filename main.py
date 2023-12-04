@@ -44,11 +44,12 @@ def on_startup():
 
 @app.get("/")
 async def root(
-    request: Request,
-    account: Annotated[AccountDTO, Depends(get_current_user)]
+    request: Request, account: Annotated[AccountDTO, Depends(get_current_user)]
 ):
     """Home landing page for signed in users"""
-    return templates.TemplateResponse("home.html.jinja", {"request": request, "name": account.name})
+    return templates.TemplateResponse(
+        "home.html.jinja", {"request": request, "name": account.name}
+    )
 
 
 @app.get("/test")
@@ -291,12 +292,15 @@ def create_recc(
     if len(meals) == 0:
         return None
 
+    choices_q = select(MealPlanDay.mealName, MealPlanDay.mealPlanDate).where(
+        account.email == MealPlanDay.email
+    )
+
+    if category:
+        choices_q = choices_q.where(Meal.category == category)
+
     # List of (meal name, day chosen)
-    past_choices: list[tuple[str, datetime.date]] = sess.exec(
-        select(MealPlanDay.mealName, MealPlanDay.mealPlanDate).where(
-            account.email == MealPlanDay.email
-        )
-    ).all()
+    past_choices: list[tuple[str, datetime.date]] = sess.exec(choices_q).all()
 
     result = construct_pmf(meals, past_choices, date)
 
