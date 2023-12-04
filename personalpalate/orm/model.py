@@ -23,7 +23,7 @@ class Follow(SQLModel, table=True):
 
 
 class MealDTO(SQLModel):
-    mealName: str
+    mealName: str = Field(index=True)
     category: str
     dateMade: date
 
