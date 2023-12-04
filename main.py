@@ -51,6 +51,14 @@ async def root(
     return templates.TemplateResponse("home.html.jinja", {"request": request, "name": account.name})
 
 
+@app.get("/meals")
+async def meals(
+    request: Request,
+    account: Annotated[AccountDTO, Depends(get_current_user)]
+):
+    return templates.TemplateResponse("meals.html.jinja", {"request": request})
+
+
 @app.get("/test")
 async def test_page(
     request: Request,

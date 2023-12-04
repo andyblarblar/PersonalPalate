@@ -1,0 +1,158 @@
+.menu-container {
+    position: relative;
+    width: 40%;
+}
+
+.gear-icon {
+    position: relative;
+    left: 45%;
+    width: fit-content;
+}
+
+.gear-dot {
+    position: relative;
+    z-index: 1;
+}
+
+.dot {
+    position: relative;
+    left: -58%;
+    top: -25px;
+    height: 11px;
+    width: 11px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.background-circle {
+    background-color: var(--color-darkslateblue-100);
+    position: absolute;
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    top: -13px;
+    left: -13px;
+    z-index: 0;
+    border: solid 7px white;
+    box-shadow: 0 6px 20px rgba(40, 41, 61, 0.22);
+}
+
+.page-container {
+    overflow: auto;
+    display: flex;
+    margin: auto;
+    justify-content: center;
+    justify-items: center;
+    align-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.menu-content {
+    margin-top: 15px;
+    display: flex;
+    padding: 10px 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    border-radius: 8px;
+    border: 10px solid white;
+    background: var(--color-darkslateblue-100);
+    box-shadow: 0 7px 20px 0 rgba(40, 41, 61, 0.10);
+}
+
+.info-text {
+    font-size: 18px;
+    color: var(--color-gainsboro-100);
+    font-weight: 600;
+    position: relative;
+    top: -15px;
+}
+
+.meals-list {
+    background-color: white;
+    overflow: scroll;
+    overflow-x: hidden;
+    max-height: 280px;
+    min-height: 32px;
+    width: 100%;
+    position: relative;
+    top: -20px;
+    display: flex;
+    gap: 5px;
+    flex-direction: column;
+}
+
+.meal-entry {
+    font-size: 15px;
+    margin: 4px;
+    display: grid;
+    grid-template-columns: 5fr .5fr .5fr;
+    grid-template-rows: 1fr;
+    max-height: 32px;
+}
+
+label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--grey-500);
+    margin: 5px;
+}
+
+.modal-text {
+    color: var(--grey-500);
+    font-size: 16px;
+}
+
+.button {
+    text-align: center;
+    display: flex;
+    height: 25px;
+    width: 230px;
+    margin: 8px 24px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    background-color: var(--grey-200);
+    box-shadow: 0 3px 8px 0 rgba(0, 0, 0, 0.08);
+    color: var(--brand-dark);
+    font-size: 14px;
+    font-weight: 600;
+    overflow: hidden;
+}
+
+h3 {
+    margin: 0;
+}
+
+.modal-body {
+    margin-bottom: 10px;
+}
+
+#home {
+    grid-column-end: span 2;
+}
+
+.button:hover {
+    cursor: pointer;
+    filter: brightness(90%);
+}
+
+#mealEditForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.buttons {
+    display: grid;
+    justify-items: center;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    width: 100%;
+}
+
+.meals {
+    width: 40%;
+}

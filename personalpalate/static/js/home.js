@@ -6,6 +6,8 @@ const modal = document.getElementById("modal");
 const closeModal = document.getElementById("close");
 const multiMeal = document.getElementById("multiMeal");
 const multiMealForm = document.getElementById("multiMealPlanForm");
+const addMeals = document.getElementById("addMeals");
+const createMeals = document.getElementById("createMeals");
 
 logout.addEventListener("click", () => {
     window.location = '/logout';
@@ -63,7 +65,7 @@ multiMealForm.addEventListener("submit", (event) => {
   }
 });
 
-changeMeal.addEventListener("click", (event) => {
+changeMeal.addEventListener("click", () => {
   const noMealPlan = document.getElementById("no-meal-plan");
   const noMeals = document.getElementById("no-meals");
   const mealPlan = document.getElementById("meal-plan");
@@ -86,6 +88,14 @@ multiMeal.addEventListener("click", () => {
 
 closeModal.addEventListener("click", () => {
   modal.style.display = "none";
+});
+
+addMeals.addEventListener("click", () => {
+  window.location = "/meals";
+});
+
+createMeals.addEventListener("click", () => {
+  window.location = "/meals";
 });
 
 window.onclick = function(event) {
@@ -120,7 +130,7 @@ async function getRecommendation(category, date) {
   if (date) {
     url += date;
   } else url += `${document.getElementById("selectedDate").innerText}`
-  if (category !== "any") url += "&" + category;
+  if (category !== "any") url += "&category=" + category;
 
   const response = await fetch(url);
 
@@ -161,10 +171,10 @@ async function getMealPlan(date) {
 }
 
 async function configureMealsContainer() {
-  /* Need to configure the meals container. There are three views:
+  /* Need to configure the meal container. There are three views:
   * 1. The user has no meals in the system. (getCategories returns []) - Direct them to add meal instead
   * 2. The user has meals in the system, but no meal plan is chosen for the day (getCategories returns array with length
-  * > 1, but meal plan endpoint has no meal for the date. - Direct user to generate recommendation
+  * > 1, but meal plan endpoint has no meal for the date). - Direct user to generate recommendation
   * 3. The user has meals in the system and there is a meal plan for the selected date - Option for user to regenerate
   * the meal recommendation */
   const categories = await getCategories();
@@ -383,7 +393,7 @@ function CalendarControl() {
           "click",
           calendarControl.navigateToCurrentMonth
         );
-        for (var i = 0; i < dateNumber.length; i++) {
+        for (let i = 0; i < dateNumber.length; i++) {
             dateNumber[i].addEventListener(
               "click",
               calendarControl.selectDate,
@@ -406,7 +416,7 @@ function CalendarControl() {
             calendarMonth === month
         ) {
           document.querySelectorAll(".number-item")[day - 1].classList.add("calendar-today");
-          let _ = configureMealsContainer();
+          configureMealsContainer();
         }
 
         let monthString = `${month}`;
@@ -427,7 +437,7 @@ function CalendarControl() {
           document
             .querySelectorAll(".number-item")
             [calendar.getDate() - 1].classList.add("calendar-today");
-          let _ = configureMealsContainer();
+          configureMealsContainer();
         }
 
         let monthString = `${currentMonth}`;
@@ -455,7 +465,7 @@ function CalendarControl() {
        //6 lines
        if(childElemCount > 35 && childElemCount <= 42 ) {
         let diff = 42 - childElemCount;
-        calendarControl.loopThroughNextDays(42 - childElemCount);
+        calendarControl.loopThroughNextDays(diff);
        }
 
       },
