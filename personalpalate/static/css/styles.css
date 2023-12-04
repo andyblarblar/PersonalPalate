@@ -201,6 +201,11 @@ animation-name: animatetop;
   text-align: center;
 }
 
+@keyframes animatetop {
+  from {top: -300px; opacity: 0}
+  to {top: 0; opacity: 1}
+}
+
 .form-button {
     border-radius: 15px;
     padding: 5px;

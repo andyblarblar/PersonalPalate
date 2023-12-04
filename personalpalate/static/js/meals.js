@@ -1,19 +1,88 @@
 const mealsList = document.getElementById("mealsList");
-const closeModal = document.getElementById("close");
-const modal = document.getElementById("modal");
+const closeEditModal = document.getElementById("close1");
+const closeCreateModal = document.getElementById("close2");
+const editModal = document.getElementById("edit-modal");
+const createModal = document.getElementById("create-modal");
 const home = document.getElementById("home");
 const mealEditForm = document.getElementById("mealEditForm");
+const mealCreateForm = document.getElementById("mealCreateForm");
+const addMealButton = document.getElementById("singleMeal");
+const uploadMealButton = document.getElementById("upload");
+const uploadText = document.getElementById("upload-text");
+const uploadForm = document.getElementById("mealUploadForm");
 
-closeModal.addEventListener("click", () => {
-  modal.style.display = "none";
+
+closeEditModal.addEventListener("click", () => {
+  editModal.style.display = "none";
+});
+
+closeCreateModal.addEventListener("click", () => {
+  createModal.style.display = "none";
 });
 
 window.onclick = function(event) {
-  if (event.target === modal) modal.style.display = "none";
+  if (event.target === editModal) editModal.style.display = "none";
+  else if (event.target === createModal) createModal.style.display = "none";
 }
 
 home.addEventListener("click", () => {
     window.location = "/";
+});
+
+addMealButton.addEventListener("click", () => {
+    createModal.style.display = "block";
+    uploadText.style.display = "none";
+    uploadForm.style.display = "none";
+    mealCreateForm.style.display = "flex";
+});
+
+uploadMealButton.addEventListener("click", () => {
+    createModal.style.display = "block";
+    uploadText.style.display = "block";
+    uploadForm.style.display = "flex";
+    mealCreateForm.style.display = "none";
+});
+
+uploadForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const csvFile = document.getElementById("csv-input").files[0];
+
+    // TODO POST csvFile to meals endpoint once backend is updated to handle it.
+});
+
+mealCreateForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const mealName = document.getElementById("createMealName");
+    const category = document.getElementById("createCategories");
+    const dateMade = document.getElementById("createDateMade");
+
+    const data = [{
+        mealName: mealName.value,
+        category: category.value,
+        dateMade: dateMade.value
+    }]
+
+    if (mealName && dateMade && category) {
+        fetch("/meal", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        }).then((response) => {
+            if (response.ok) {
+                populateMeals();
+                alert("Successfully added meal!");
+                createModal.style.display = "none";
+            } else {
+                response.text().then((error) => {
+                    console.error("Failed to save meal with error", error)
+                });
+            }
+        });
+    }
 });
 
 mealEditForm.addEventListener("submit", (event) => {
@@ -33,8 +102,6 @@ mealEditForm.addEventListener("submit", (event) => {
         email: userEmail.innerText
     }
 
-    console.log(data);
-
     fetch("/meal", {
         method: "PUT",
         headers: {
@@ -51,7 +118,7 @@ mealEditForm.addEventListener("submit", (event) => {
         }
     });
     populateMeals();
-    modal.style.display = "none";
+    editModal.style.display = "none";
 });
 
 async function populateMeals() {
@@ -70,43 +137,55 @@ async function populateMeals() {
             mealEntry.id = meal.mealID;
             mealEntry.classList.add("meal-entry");
 
-            let editIcon = document.createElement("i");
-            editIcon.classList.add("fa-solid", "fa-pen-to-square");
-            editIcon.style.alignSelf = "center";
-            editIcon.style.cursor = "pointer";
+            const userEmail = document.getElementById("accountEmail");
 
-            editIcon.addEventListener("click", () => {
-                openModal(meal);
-            });
+            if (meal.email === userEmail.innerText) {
+                let editIcon = document.createElement("i");
+                editIcon.classList.add("fa-solid", "fa-pen-to-square");
+                editIcon.style.alignSelf = "center";
+                editIcon.style.cursor = "pointer";
 
-            let trashIcon = document.createElement("i");
-            trashIcon.classList.add("fa-solid", "fa-trash");
-            trashIcon.style.alignSelf = "center";
-            trashIcon.style.cursor = "pointer";
-
-            trashIcon.addEventListener("click", () => {
-                const confirmed = confirm("Are you sure you want to delete this meal?");
-                if (!confirmed) return;
-                fetch("/meal", {
-                    method: "DELETE",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(meal)
-                }).then((deleteResponse) => {
-                    if (deleteResponse.ok) {
-                        alert("Successfully deleted!");
-                    } else {
-                        deleteResponse.text().then((error) => {
-                            alert(`Failed to delete meal. Error: ${error}`)
-                        });
-                    }
+                editIcon.addEventListener("click", () => {
+                    openModal(meal);
                 });
-                populateMeals();
-            });
 
-            mealEntry.appendChild(editIcon);
-            mealEntry.appendChild(trashIcon);
+                let trashIcon = document.createElement("i");
+                trashIcon.classList.add("fa-solid", "fa-trash");
+                trashIcon.style.alignSelf = "center";
+                trashIcon.style.cursor = "pointer";
+
+                trashIcon.addEventListener("click", () => {
+                    const confirmed = confirm("Are you sure you want to delete this meal?");
+                    if (!confirmed) return;
+                    fetch("/meal", {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(meal)
+                    }).then((deleteResponse) => {
+                        if (deleteResponse.ok) {
+                            alert("Successfully deleted!");
+                        } else {
+                            deleteResponse.text().then((error) => {
+                                alert(`Failed to delete meal. Error: ${error}`)
+                            });
+                        }
+                    });
+                    populateMeals();
+                });
+
+                mealEntry.appendChild(editIcon);
+                mealEntry.appendChild(trashIcon);
+            }
+            else {
+                const author = document.createElement("div");
+                author.style.alignSelf = "center";
+                author.style.fontSize = "16px";
+                author.innerText = meal.email;
+
+                mealEntry.appendChild(author);
+            }
             mealsList.appendChild(mealEntry);
         });
     } else {
@@ -115,7 +194,7 @@ async function populateMeals() {
 }
 
 async function openModal(meal) {
-    modal.style.display = "block";
+    editModal.style.display = "block";
 
     const mealName = document.getElementById("mealName");
     const category = document.getElementById("categories");

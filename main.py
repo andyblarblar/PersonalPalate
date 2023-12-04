@@ -57,7 +57,7 @@ async def meals(
     request: Request,
     account: Annotated[AccountDTO, Depends(get_current_user)]
 ):
-    return templates.TemplateResponse("meals.html.jinja", {"request": request})
+    return templates.TemplateResponse("meals.html.jinja", {"request": request, "user_email": account.email})
 
 
 @app.get("/test")

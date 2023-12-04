@@ -18,16 +18,16 @@
             <p class="info-text">Your Meals: </p>
             <div class="meals-list" id="mealsList"></div>
             <div class="buttons">
-                <div class="button">Add a meal</div>
-                <div class="button">Upload multiple meals</div>
+                <div class="button" id="singleMeal">Add a meal</div>
+                <div class="button" id="upload">Upload multiple meals</div>
                 <div class="button" id="home">Back to home</div>
             </div>
         </div>
     </div>
-    <div class="modal" id="modal">
+    <div class="modal" id="edit-modal">
         <div class="modal-content meals">
             <div class="modal-header">
-                <span class="close" id="close">&times;</span>
+                <span class="close" id="close1">&times;</span>
                 <h3>Edit Meal</h3>
             </div>
             <div class="modal-body">
@@ -39,7 +39,7 @@
                         <option value="beef">Beef</option>
                         <option value="chicken">Chicken</option>
                         <option value="pork">Pork</option>
-                        <option value="meat_other">Other Meat</option>
+                        <option value="other meat">Other Meat</option>
                         <option value="seafood">Seafood</option>
                         <option value="pasta">Pasta</option>
                         <option value="salad">Salad</option>
@@ -53,10 +53,43 @@
             </div>
         </div>
     </div>
+    <div class="modal" id="create-modal">
+        <div class="modal-content meals">
+            <div class="modal-header">
+                <span class="close" id="close2">&times;</span>
+                <h3>Add Meal</h3>
+            </div>
+            <div class="modal-body">
+                <p class="modal-text" id="upload-text">CSV format should be (meal name, category, date made)</p>
+                <form id="mealUploadForm" action="#">
+                    <label>Upload a CSV</label>
+                    <input type="file" id="csv-input" accept=".csv">
+                    <input class="form-button" type="submit" value="Upload meals">
+                </form>
+                <form id="mealCreateForm" action="#">
+                    <label for="createMealName">Meal Name</label>
+                    <input type="text" id="createMealName" />
+                    <label for="createCategories">Category</label>
+                    <select name="categories" id="createCategories">
+                        <option value="beef">Beef</option>
+                        <option value="chicken">Chicken</option>
+                        <option value="pork">Pork</option>
+                        <option value="other meat">Other Meat</option>
+                        <option value="seafood">Seafood</option>
+                        <option value="pasta">Pasta</option>
+                        <option value="salad">Salad</option>
+                    </select>
+                    <label for="createDateMade">Date Made</label>
+                    <input type="date" id="createDateMade" />
+                    <input class="form-button" type="submit" value="Save Meal" />
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="accountEmail" hidden>{{ user_email }}</div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-    <script src="static/js/jquery-csv-min.js"></script>
     <script src="static/js/meals.js"></script>
 {% endblock %}
