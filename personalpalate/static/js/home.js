@@ -8,9 +8,14 @@ const multiMeal = document.getElementById("multiMeal");
 const multiMealForm = document.getElementById("multiMealPlanForm");
 const addMeals = document.getElementById("addMeals");
 const createMeals = document.getElementById("createMeals");
+const settings = document.getElementById("settings");
 
 logout.addEventListener("click", () => {
     window.location = '/logout';
+});
+
+settings.addEventListener("click", () => {
+  window.location = '/settings';
 });
 
 mealForm.addEventListener("submit", (event) => {

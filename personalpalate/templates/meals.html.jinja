@@ -1,93 +1,82 @@
-{% extends "common.html.jinja" %}
+{% extends "config.html.jinja" %}
 
-{% block head %}
+{% block stylesheets %}
     <link rel="stylesheet" href="static/css/meals.css">
 {% endblock %}
 
-{% block body %}
-<div class="page-container" id="test">
-    <div class="menu-container">
-        <div class="gear-icon">
-            <div class="gear-dot">
-                <img src="static/public/gear.svg" alt="gear"/>
-                <span class="dot"></span>
-            </div>
-            <div class="background-circle"></div>
-        </div>
-        <div class="menu-content">
-            <p class="info-text">Your Meals: </p>
-            <div class="meals-list" id="mealsList"></div>
-            <div class="buttons">
-                <div class="button" id="singleMeal">Add a meal</div>
-                <div class="button" id="upload">Upload multiple meals</div>
-                <div class="button" id="home">Back to home</div>
-            </div>
-        </div>
-    </div>
-    <div class="modal" id="edit-modal">
-        <div class="modal-content meals">
-            <div class="modal-header">
-                <span class="close" id="close1">&times;</span>
-                <h3>Edit Meal</h3>
-            </div>
-            <div class="modal-body">
-                <form id="mealEditForm" action="#">
-                    <label for="mealName">Meal Name</label>
-                    <input type="text" id="mealName" />
-                    <label for="categories">Category</label>
-                    <select name="categories" id="categories">
-                        <option value="beef">Beef</option>
-                        <option value="chicken">Chicken</option>
-                        <option value="pork">Pork</option>
-                        <option value="other meat">Other Meat</option>
-                        <option value="seafood">Seafood</option>
-                        <option value="pasta">Pasta</option>
-                        <option value="salad">Salad</option>
-                    </select>
-                    <label for="dateMade">Date Made</label>
-                    <input type="date" id="dateMade" />
-                    <div id="mealID" hidden></div>
-                    <div id="userEmail" hidden></div>
-                    <input class="form-button" type="submit" value="Save Changes" />
-                </form>
-            </div>
-        </div>
-    </div>
-    <div class="modal" id="create-modal">
-        <div class="modal-content meals">
-            <div class="modal-header">
-                <span class="close" id="close2">&times;</span>
-                <h3>Add Meal</h3>
-            </div>
-            <div class="modal-body">
-                <p class="modal-text" id="upload-text">CSV format should be (meal name, category, date made)</p>
-                <form id="mealUploadForm" action="#">
-                    <label>Upload a CSV</label>
-                    <input type="file" id="csv-input" accept=".csv">
-                    <input class="form-button" type="submit" value="Upload meals">
-                </form>
-                <form id="mealCreateForm" action="#">
-                    <label for="createMealName">Meal Name</label>
-                    <input type="text" id="createMealName" />
-                    <label for="createCategories">Category</label>
-                    <select name="categories" id="createCategories">
-                        <option value="beef">Beef</option>
-                        <option value="chicken">Chicken</option>
-                        <option value="pork">Pork</option>
-                        <option value="other meat">Other Meat</option>
-                        <option value="seafood">Seafood</option>
-                        <option value="pasta">Pasta</option>
-                        <option value="salad">Salad</option>
-                    </select>
-                    <label for="createDateMade">Date Made</label>
-                    <input type="date" id="createDateMade" />
-                    <input class="form-button" type="submit" value="Save Meal" />
-                </form>
-            </div>
-        </div>
-    </div>
-    <div id="accountEmail" hidden>{{ user_email }}</div>
+{% block menu_content %}
+<p class="info-text">Your Meals: </p>
+<div class="meals-list" id="mealsList"></div>
+<div class="buttons">
+    <div class="button" id="singleMeal">Add a meal</div>
+    <div class="button" id="upload">Upload multiple meals</div>
+    <div class="button" id="home">Back to home</div>
 </div>
+{% endblock %}
+{% block modal %}
+<div class="modal" id="edit-modal">
+    <div class="modal-content meals">
+        <div class="modal-header">
+            <span class="close" id="close1">&times;</span>
+            <h3>Edit Meal</h3>
+        </div>
+        <div class="modal-body">
+            <form id="mealEditForm" action="#">
+                <label for="mealName">Meal Name</label>
+                <input type="text" id="mealName" />
+                <label for="categories">Category</label>
+                <select name="categories" id="categories">
+                    <option value="beef">Beef</option>
+                    <option value="chicken">Chicken</option>
+                    <option value="pork">Pork</option>
+                    <option value="other meat">Other Meat</option>
+                    <option value="seafood">Seafood</option>
+                    <option value="pasta">Pasta</option>
+                    <option value="salad">Salad</option>
+                </select>
+                <label for="dateMade">Date Made</label>
+                <input type="date" id="dateMade" />
+                <div id="mealID" hidden></div>
+                <div id="userEmail" hidden></div>
+                <input class="form-button" type="submit" value="Save Changes" />
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="create-modal">
+    <div class="modal-content meals">
+        <div class="modal-header">
+            <span class="close" id="close2">&times;</span>
+            <h3>Add Meal</h3>
+        </div>
+        <div class="modal-body">
+            <p class="modal-text" id="upload-text">CSV format should be (meal name, category, date made)</p>
+            <form id="mealUploadForm" action="#">
+                <label>Upload a CSV</label>
+                <input type="file" id="csv-input" accept=".csv">
+                <input class="form-button" type="submit" value="Upload meals">
+            </form>
+            <form id="mealCreateForm" action="#">
+                <label for="createMealName">Meal Name</label>
+                <input type="text" id="createMealName" />
+                <label for="createCategories">Category</label>
+                <select name="categories" id="createCategories">
+                    <option value="beef">Beef</option>
+                    <option value="chicken">Chicken</option>
+                    <option value="pork">Pork</option>
+                    <option value="other meat">Other Meat</option>
+                    <option value="seafood">Seafood</option>
+                    <option value="pasta">Pasta</option>
+                    <option value="salad">Salad</option>
+                </select>
+                <label for="createDateMade">Date Made</label>
+                <input type="date" id="createDateMade" />
+                <input class="form-button" type="submit" value="Save Meal" />
+            </form>
+        </div>
+    </div>
+</div>
+<div id="accountEmail" hidden>{{ user_email }}</div>
 {% endblock %}
 
 {% block scripts %}

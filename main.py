@@ -60,12 +60,13 @@ async def meals(
     return templates.TemplateResponse("meals.html.jinja", {"request": request, "user_email": account.email})
 
 
-@app.get("/test")
-async def test_page(
+@app.get("/settings")
+async def settings(
     request: Request,
+    account: Annotated[AccountDTO, Depends(get_current_user)]
 ):
     """Testing page for new pages in development"""
-    return templates.TemplateResponse("meals.html.jinja", {"request": request})
+    return templates.TemplateResponse("settings.html.jinja", {"request": request})
 
 
 class FollowData(BaseModel):
