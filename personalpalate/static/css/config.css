@@ -60,3 +60,25 @@
     background: var(--color-darkslateblue-100);
     box-shadow: 0 7px 20px 0 rgba(40, 41, 61, 0.10);
 }
+
+.info-text {
+    font-size: 18px;
+    color: var(--color-gainsboro-100);
+    font-weight: 600;
+    position: relative;
+    top: -15px;
+}
+
+.list {
+    background-color: white;
+    overflow: scroll;
+    overflow-x: hidden;
+    max-height: 280px;
+    min-height: 32px;
+    width: 100%;
+    position: relative;
+    top: -20px;
+    display: flex;
+    gap: 5px;
+    flex-direction: column;
+}

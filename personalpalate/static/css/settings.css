@@ -1,0 +1,8 @@
+.follow-entry {
+    font-size: 15px;
+    margin: 4px;
+    display: grid;
+    grid-template-columns: 5fr .5fr;
+    grid-template-rows: 1fr;
+    max-height: 32px;
+}
