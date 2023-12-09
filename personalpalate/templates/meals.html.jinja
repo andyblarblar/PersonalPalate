@@ -23,17 +23,9 @@
         <div class="modal-body">
             <form id="mealEditForm" action="#">
                 <label for="mealName">Meal Name</label>
-                <input type="text" id="mealName" />
+                <input type="text" id="mealName" minlength="1" required/>
                 <label for="categories">Category</label>
-                <select name="categories" id="categories">
-                    <option value="beef">Beef</option>
-                    <option value="chicken">Chicken</option>
-                    <option value="pork">Pork</option>
-                    <option value="other meat">Other Meat</option>
-                    <option value="seafood">Seafood</option>
-                    <option value="pasta">Pasta</option>
-                    <option value="salad">Salad</option>
-                </select>
+                <input type="text" name="categories" id="categories" minlength="1" required/>
                 <label for="dateMade">Date Made</label>
                 <input type="date" id="dateMade" />
                 <div id="mealID" hidden></div>
@@ -58,17 +50,9 @@
             </form>
             <form id="mealCreateForm" action="#">
                 <label for="createMealName">Meal Name</label>
-                <input type="text" id="createMealName" />
+                <input type="text" id="createMealName" minlength="1" required/>
                 <label for="createCategories">Category</label>
-                <select name="categories" id="createCategories">
-                    <option value="beef">Beef</option>
-                    <option value="chicken">Chicken</option>
-                    <option value="pork">Pork</option>
-                    <option value="other meat">Other Meat</option>
-                    <option value="seafood">Seafood</option>
-                    <option value="pasta">Pasta</option>
-                    <option value="salad">Salad</option>
-                </select>
+                <input type="text" name="categories" id="createCategories" minlength="1" required/>
                 <label for="createDateMade">Date Made</label>
                 <input type="date" id="createDateMade" />
                 <input class="form-button" type="submit" value="Save Meal" />

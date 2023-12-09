@@ -11,18 +11,21 @@ const uploadMealButton = document.getElementById("upload");
 const uploadText = document.getElementById("upload-text");
 const uploadForm = document.getElementById("mealUploadForm");
 
+function validate_name_and_category(name, cat) {
+    return !(name.trim().length === 0 || cat.trim().length === 0)
+}
 
 closeEditModal.addEventListener("click", () => {
-  editModal.style.display = "none";
+    editModal.style.display = "none";
 });
 
 closeCreateModal.addEventListener("click", () => {
-  createModal.style.display = "none";
+    createModal.style.display = "none";
 });
 
-window.onclick = function(event) {
-  if (event.target === editModal) editModal.style.display = "none";
-  else if (event.target === createModal) createModal.style.display = "none";
+window.onclick = function (event) {
+    if (event.target === editModal) editModal.style.display = "none";
+    else if (event.target === createModal) createModal.style.display = "none";
 }
 
 home.addEventListener("click", () => {
@@ -82,6 +85,11 @@ mealCreateForm.addEventListener("submit", (event) => {
     const category = document.getElementById("createCategories");
     const dateMade = document.getElementById("createDateMade");
 
+    if (!validate_name_and_category(mealName.value, category.value)) {
+        alert("Meal and category must have a name!")
+        return
+    }
+
     const data = [{
         mealName: mealName.value,
         category: category.value,
@@ -118,6 +126,11 @@ mealEditForm.addEventListener("submit", (event) => {
     const userEmail = document.getElementById("userEmail");
     const mealID = document.getElementById("mealID");
 
+    if (!validate_name_and_category(mealName.value, category.value)) {
+        alert("Meal and category must have a name!")
+        return
+    }
+
     const data = {
         mealName: mealName.value,
         category: category.value,
@@ -137,7 +150,7 @@ mealEditForm.addEventListener("submit", (event) => {
             alert("Updated meal successfully!");
         } else {
             response.text().then((error) => {
-               console.error("Failed to update meal with error:", error);
+                console.error("Failed to update meal with error:", error);
             });
         }
     });
@@ -201,8 +214,7 @@ async function populateMeals() {
 
                 mealEntry.appendChild(editIcon);
                 mealEntry.appendChild(trashIcon);
-            }
-            else {
+            } else {
                 const author = document.createElement("div");
                 author.style.alignSelf = "center";
                 author.style.fontSize = "16px";
@@ -226,7 +238,7 @@ async function openModal(meal) {
     const userEmail = document.getElementById("userEmail");
     const mealID = document.getElementById("mealID");
 
-    mealName.placeholder = meal.mealName;
+    mealName.value = meal.mealName;
     category.value = meal.category;
     dateMade.value = meal.dateMade;
     userEmail.innerText = meal.email;
