@@ -65,10 +65,12 @@ async def meals(
 @app.get("/settings")
 async def settings(
     request: Request,
-    account: Annotated[AccountDTO, Depends(get_current_user)]
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+    sess: Annotated[Session, Depends(db_session)]
 ):
-    """Testing page for new pages in development"""
-    return templates.TemplateResponse("settings.html.jinja", {"request": request})
+    followable = sess.exec(select(Account.followable).where(Account.email == account.email)).first()
+    return templates.TemplateResponse("settings.html.jinja", {"request": request, "name": account.name,
+                                                              "followable": followable})
 
 
 class FollowData(BaseModel):
@@ -113,7 +115,7 @@ async def get_following(
 ):
     """Returns all followed users"""
 
-    return sess.exec(select(Follow).where(Follow.followingEmail == account.email))
+    return sess.exec(select(Follow).where(Follow.followingEmail == account.email)).all()
 
 
 @app.delete("/account/follow")
@@ -137,6 +139,7 @@ async def unfollow(
         raise HTTPException(400, "Follow relationship does not exist")
 
     sess.delete(f)
+    sess.commit()
 
 
 class AccountSettings(BaseModel):
@@ -186,18 +189,22 @@ async def add_meals(
     return meal_rec
 
 
+class MealCSV(BaseModel):
+    meal_csv: str
+
+
 @app.post("/meal/csv", status_code=201, response_model=list[Meal])
 async def add_meals_csv(
     sess: Annotated[Session, Depends(db_session)],
     account: Annotated[AccountDTO, Depends(get_current_user)],
-    meal_csv: str,
+    meal_csv: MealCSV,
 ):
     """
     Adds many meals to the users account from a csv. Each line should be newline seperated. This csv should have the
     columns `mealName` `category` and `dateMade`, where date is an ISO date of form yyyy-mm-dd.
     """
 
-    uploaded = csv.DictReader(meal_csv.splitlines())
+    uploaded = csv.DictReader(meal_csv.meal_csv.splitlines())
 
     if len(uploaded.fieldnames) < 3:
         raise HTTPException(400, "Need header row!")

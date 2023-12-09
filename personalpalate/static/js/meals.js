@@ -48,7 +48,31 @@ uploadForm.addEventListener("submit", (event) => {
 
     const csvFile = document.getElementById("csv-input").files[0];
 
-    // TODO POST csvFile to meals endpoint once backend is updated to handle it.
+    const reader = new FileReader();
+
+    reader.readAsText(csvFile);
+
+    reader.addEventListener("loadend", (result) => {
+        const csvString = result.target.result;
+
+        fetch("/meal/csv", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({meal_csv: csvString})
+        }).then((response) => {
+            if (!response.ok) {
+                response.text().then((error) => {
+                    console.error("Failed to upload CSV", error);
+                })
+            } else {
+                alert("Successfully uploaded meals");
+                createModal.style.display = "none";
+                populateMeals();
+            }
+        });
+    });
 });
 
 mealCreateForm.addEventListener("submit", (event) => {

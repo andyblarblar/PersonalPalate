@@ -7,6 +7,20 @@
 {% block menu_content %}
 <p class="info-text">Users Followed: </p>
 <div class="list" id="followList"></div>
+<div class="text-input">
+    <input id="follow-email" type="text" placeholder="Enter Email...">
+    <div class="button" id="follow">Follow</div>
+</div>
+<div class="switch">
+    <span class="info-text">Allow Users to Follow You</span>
+    <input type="checkbox" id="checkbox" {% if followable %} checked {% endif %}>
+    <span class="slider" id="slider"></span>
+</div>
+<div class="text-input">
+    <input id="name" type="text" placeholder="{{ name }}">
+    <div class="button" id="nameButton">Update Name</div>
+</div>
+<div class="button" id="home">Back to Home</div>
 {% endblock %}
 
 {% block modal %}
