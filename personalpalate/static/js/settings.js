@@ -17,7 +17,7 @@ slider.addEventListener("click", () => {
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ followable: checkbox.checked, name: name.placeholder})
+        body: JSON.stringify({followable: checkbox.checked, name: name.placeholder})
     }).then((response) => {
         if (!response.ok) {
             alert("Failed to update followable settings");
@@ -31,7 +31,10 @@ nameButton.addEventListener("click", () => {
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ followable: checkbox.checked, name: name.value})
+        body: JSON.stringify({
+            followable: checkbox.checked,
+            name: name.value.trim().length > 0 ? name.value : name.placeholder
+        })
     }).then((response) => {
         if (!response.ok) {
             alert("Failed to update name");
@@ -43,26 +46,26 @@ nameButton.addEventListener("click", () => {
 });
 
 followButton.addEventListener("click", () => {
-   const email = document.getElementById("follow-email");
+    const email = document.getElementById("follow-email");
 
-   fetch("/account/follow", {
-       method: "POST",
-       headers: {
-           "Content-Type": "application/json"
-       },
-       body: JSON.stringify({email: email.value})
-   }).then((response) => {
-       if (!response.ok) {
-           response.text().then((error) => {
-               let err_json = JSON.parse(error);
-               alert(`Failed to follow user: ${err_json.detail}`);
-           });
-       } else {
-           alert("Successfully followed user.");
-           email.value = "";
-           populateFollowers();
-       }
-   })
+    fetch("/account/follow", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({email: email.value})
+    }).then((response) => {
+        if (!response.ok) {
+            response.text().then((error) => {
+                let err_json = JSON.parse(error);
+                alert(`Failed to follow user: ${err_json.detail}`);
+            });
+        } else {
+            alert("Successfully followed user.");
+            email.value = "";
+            populateFollowers();
+        }
+    })
 });
 
 async function populateFollowers() {
@@ -87,22 +90,22 @@ async function populateFollowers() {
             unfollow.style.margin = "0";
 
             unfollow.addEventListener("click", () => {
-               fetch("/account/follow", {
-                   method: "DELETE",
-                   headers: {
-                       "Content-Type": "application/json"
-                   },
-                   body: JSON.stringify({email: followee.email})
-               }).then((response) => {
-                  if (response.ok) {
-                    alert("Successfully unfollowed user!");
-                  } else {
-                      response.text().then((error) => {
-                         console.error(`Error occurred unfollowing user: ${error}`)
-                      });
-                  }
-                  populateFollowers();
-               });
+                fetch("/account/follow", {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({email: followee.email})
+                }).then((response) => {
+                    if (response.ok) {
+                        alert("Successfully unfollowed user!");
+                    } else {
+                        response.text().then((error) => {
+                            console.error(`Error occurred unfollowing user: ${error}`)
+                        });
+                    }
+                    populateFollowers();
+                });
             });
 
             followEntry.appendChild(unfollow);
