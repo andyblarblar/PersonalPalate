@@ -31,7 +31,7 @@ class TokenData(BaseModel):
 
 def create_access_token(sub: str) -> str:
     """Signs a JWT"""
-    encoded_jwt = jwt.encode({"exp": datetime.utcnow() + timedelta(minutes=15), "sub": sub}, SECRET_KEY,
+    encoded_jwt = jwt.encode({"exp": datetime.utcnow() + timedelta(hours=24), "sub": sub}, SECRET_KEY,
                              algorithm=ALGORITHM)
     return encoded_jwt
 

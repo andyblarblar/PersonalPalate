@@ -25,6 +25,8 @@ def construct_pmf(
     # Constructing the PMF based on the frequency in the dataset
     pmf = {value: freq[value] / total_count for value in freq}
 
+    print(f"Inital pmf: {pmf}")
+
     # apply recency_weight
     for meal_name, meal_date in past_choices:
         # Meal plans can reference deleted meals, so just skip them if that is the case as we should only recommend
@@ -36,6 +38,8 @@ def construct_pmf(
 
         # taking n-th root of probability - as distance increases, n increases
         pmf[meal_name] = pmf[meal_name] ** recency_weight
+
+    print(f"After recently: {pmf}")
 
     # create a dictionary to hold each meal and the dates cooked
     meal_dict = defaultdict(list)
@@ -57,6 +61,8 @@ def construct_pmf(
         seasonal_weight = 1 / distance
         pmf[meal] *= seasonal_weight
 
+    print(f"After seasonal: {pmf}")
+
     # calculate the adjusted total probability for normalization
     total_probability = sum(pmf.values())
 
@@ -64,7 +70,7 @@ def construct_pmf(
     for meal_name in pmf:
         pmf[meal_name] /= total_probability
 
-    print(pmf)
+    print(f"After normalizing: {pmf}")
     # select a meal based on the probability
     meal_selection = random.choices(list(pmf.keys()), weights=list(pmf.values()), k=1)[
         0
