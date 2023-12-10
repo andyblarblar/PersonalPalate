@@ -1,0 +1,68 @@
+{% extends "config.html.jinja" %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="static/css/meals.css">
+{% endblock %}
+
+{% block menu_content %}
+<p class="info-text">Your Meals: </p>
+<div class="list" id="mealsList"></div>
+<div class="buttons">
+    <div class="button" id="singleMeal">Add a meal</div>
+    <div class="button" id="upload">Upload multiple meals</div>
+    <div class="button" id="home">Back to home</div>
+</div>
+{% endblock %}
+{% block modal %}
+<div class="modal" id="edit-modal">
+    <div class="modal-content meals">
+        <div class="modal-header">
+            <span class="close" id="close1">&times;</span>
+            <h3>Edit Meal</h3>
+        </div>
+        <div class="modal-body">
+            <form id="mealEditForm" action="#">
+                <label for="mealName">Meal Name</label>
+                <input type="text" id="mealName" minlength="1" required/>
+                <label for="categories">Category</label>
+                <input type="text" name="categories" id="categories" minlength="1" required/>
+                <label for="dateMade">Date Made</label>
+                <input type="date" id="dateMade" />
+                <div id="mealID" hidden></div>
+                <div id="userEmail" hidden></div>
+                <input class="form-button" type="submit" value="Save Changes" />
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal" id="create-modal">
+    <div class="modal-content meals">
+        <div class="modal-header">
+            <span class="close" id="close2">&times;</span>
+            <h3>Upload Meals</h3>
+        </div>
+        <div class="modal-body">
+            <p class="modal-text" id="upload-text">CSV format should be (mealName, category, dateMade) where dateMade is in the format YYYY-MM-DD.</p>
+            <form id="mealUploadForm" action="#">
+                <label>Upload a CSV</label>
+                <input type="file" id="csv-input" accept=".csv" required>
+                <input class="form-button" type="submit" value="Upload meals">
+            </form>
+            <form id="mealCreateForm" action="#">
+                <label for="createMealName">Meal Name</label>
+                <input type="text" id="createMealName" minlength="1" required/>
+                <label for="createCategories">Category</label>
+                <input type="text" name="categories" id="createCategories" minlength="1" required/>
+                <label for="createDateMade">Date Made</label>
+                <input type="date" id="createDateMade" />
+                <input class="form-button" type="submit" value="Save Meal" />
+            </form>
+        </div>
+    </div>
+</div>
+<div id="accountEmail" hidden>{{ user_email }}</div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="static/js/meals.js"></script>
+{% endblock %}

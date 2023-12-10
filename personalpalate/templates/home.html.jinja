@@ -1,7 +1,90 @@
 {% extends "common.html.jinja" %}
 
+{% block head %}
+    <link rel="stylesheet" href="static/css/home.css">
+{% endblock %}
+
 {% block body %}
-    <p>
-        welcome to papersplease! Please select your role from the options above.
-    </p>
+<div class="page-container">
+    <div class="container">
+        <div class="container-blue-bar"></div>
+        <div class="brand-content">
+            <div class="date-icon-container">
+                <img
+                        class="combined-shape-icon1"
+                        alt="Calendar Icon"
+                        src="static/public/combined-shape.svg"
+                />
+
+                <div class="divider-container">
+                    <div class="divider"></div>
+                </div>
+            </div>
+            <span>Personal</span><b>Palate</b>
+            <br>
+            <span class="title-text">Welcome back, {{ name }}</span>
+        </div>
+    </div>
+    <div class="calendar"></div>
+    <div class="container">
+        <div class="container-blue-bar"></div>
+        <div class="actions-content">
+            <span class="action-icon fa-solid fa-gauge-high fa-xs"></span>
+            <div class="title-text">Quick Actions</div>
+            <div class="actions">
+                <div class="button" id="settings">Edit Settings</div>
+                <div class="button" id="addMeals">Add/Edit Meal(s)</div>
+                <div class="button" id="multiMeal">Create Multiple Meal Plans</div>
+                <div class="button" id="logout">Logout</div>
+            </div>
+        </div>
+    </div>
+    <div class="meals-container container">
+        <div class="container-blue-bar"></div>
+        <div class="meals-content">
+            <div class="title-text" id="selectedDate"></div>
+            <div id="no-meals" hidden>
+                <div class="button" id="createMeals">You have no meals! Upload one or more to create a meal plan.</div>
+            </div>
+            <div id="no-meal-plan">
+                <div class="meal-text">Select a category to generate a meal!</div>
+                <form action="#" id="recommendation">
+                    <label for="categories">Category:</label>
+                    <select name="categories" id="categories">
+                        <option value="any">Any category</option>
+                    </select>
+                    <input class="form-button" type="submit" value="Get Recommendation" />
+                </form>
+            </div>
+            <div id="meal-plan" hidden>
+                <div class="meal-text" id="meal"></div>
+                <div class="button" id="changeMeal">Change Meal</div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" id="close">&times;</span>
+                <h3>Create Multiple Meal Plans</h3>
+            </div>
+            <div class="modal-body">
+                <p class="title-text">
+                    Select the date range you want to create meal plans for.
+                    <br>This will erase any existing meal plans and the meals can be from any category
+                </p>
+                <form id="multiMealPlanForm" action="#">
+                    <label for="startDate">Start Date</label>
+                    <input id="startDate" type="date" />
+                    <label for="endDate">End Date</label>
+                    <input id="endDate" type="date" />
+                    <input class="form-button" type="submit" value="Create plans" />
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="static/js/home.js"></script>
 {% endblock %}

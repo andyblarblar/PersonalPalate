@@ -1,5 +1,6 @@
 import datetime
 from typing import Annotated, Optional
+import csv
 
 from fastapi import FastAPI, Depends, HTTPException, Response, Request, Form
 from fastapi.templating import Jinja2Templates
@@ -7,6 +8,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy import update, delete
+from sqlalchemy.orm import aliased
 from sqlmodel import SQLModel, Session, select
 from starlette import status
 from starlette.responses import RedirectResponse
@@ -23,7 +25,6 @@ from personalpalate.orm.model import (
     Follow,
     Meal,
     MealDTO,
-    Category,
     MealPlanDay,
     MealPlanDayDTO,
 )
@@ -47,8 +48,29 @@ async def root(
     request: Request, account: Annotated[AccountDTO, Depends(get_current_user)]
 ):
     """Home landing page for signed in users"""
+    return templates.TemplateResponse(
+        "home.html.jinja", {"request": request, "name": account.name}
+    )
 
-    return templates.TemplateResponse("home.html.jinja", {"request": request})
+
+@app.get("/meals")
+async def meals(
+    request: Request, account: Annotated[AccountDTO, Depends(get_current_user)]
+):
+    return templates.TemplateResponse(
+        "meals.html.jinja", {"request": request, "user_email": account.email}
+    )
+
+
+@app.get("/settings")
+async def settings(
+    request: Request,
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+    sess: Annotated[Session, Depends(db_session)]
+):
+    followable = sess.exec(select(Account.followable).where(Account.email == account.email)).first()
+    return templates.TemplateResponse("settings.html.jinja", {"request": request, "name": account.name,
+                                                              "followable": followable})
 
 
 class FollowData(BaseModel):
@@ -86,6 +108,16 @@ async def follow(
     return f
 
 
+@app.get("/account/follow", response_model=list[Follow])
+async def get_following(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+):
+    """Returns all followed users"""
+
+    return sess.exec(select(Follow).where(Follow.followingEmail == account.email)).all()
+
+
 @app.delete("/account/follow")
 async def unfollow(
     sess: Annotated[Session, Depends(db_session)],
@@ -107,10 +139,12 @@ async def unfollow(
         raise HTTPException(400, "Follow relationship does not exist")
 
     sess.delete(f)
+    sess.commit()
 
 
 class AccountSettings(BaseModel):
-    followable: bool
+    followable: Optional[bool]
+    name: Optional[str]
 
 
 @app.put("/account/settings", response_model=AccountDTO)
@@ -121,9 +155,11 @@ async def update_settings(
 ):
     """Updates user settings"""
 
-    follow2 = settings.followable
     account = sess.get(Account, account.email)
-    account.followable = follow2
+
+    # Copy settings over
+    for k, v in settings.dict(exclude_unset=True).items():
+        setattr(account, k, v)
 
     sess.add(account)
     sess.commit()
@@ -137,11 +173,48 @@ async def add_meals(
     account: Annotated[AccountDTO, Depends(get_current_user)],
     meals: list[MealDTO],
 ):
-    """Adds many meals to the users account"""
+    """Adds many meals to the users account. Categories are arbitrary, but are exact."""
 
     # Transform into DB model
     meal_rec = [Meal(email=account.email, **m.dict()) for m in meals]
+
+    # Clean categories
+    for meal in meal_rec:
+        meal.category = meal.category.lower().strip()
+
     sess.add_all(meal_rec)
+
+    sess.commit()
+
+    return meal_rec
+
+
+class MealCSV(BaseModel):
+    meal_csv: str
+
+
+@app.post("/meal/csv", status_code=201, response_model=list[Meal])
+async def add_meals_csv(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+    meal_csv: MealCSV,
+):
+    """
+    Adds many meals to the users account from a csv. Each line should be newline seperated. This csv should have the
+    columns `mealName` `category` and `dateMade`, where date is an ISO date of form yyyy-mm-dd.
+    """
+
+    uploaded = csv.DictReader(meal_csv.meal_csv.splitlines())
+
+    if len(uploaded.fieldnames) < 3:
+        raise HTTPException(400, "Need header row!")
+
+    meal_rec = [Meal(email=account.email, **m) for m in uploaded]
+    sess.add_all(meal_rec)
+
+    # Clean categories
+    for meal in meal_rec:
+        meal.category = meal.category.lower().strip()
 
     sess.commit()
 
@@ -185,13 +258,14 @@ async def update_meal(
 
     for key, value in meal.dict().items():
         setattr(db_meal, key, value)
+
+    db_meal.category = db_meal.category.lower().strip()
     sess.add(db_meal)
     sess.commit()
 
-    emails = [
-        a.followingEmail
-        for a in sess.exec(select(Follow).where(Follow.email == account.email)).all()
-    ] + [account.email]
+    emails = sess.exec(
+        select(Follow.followingEmail).where(Follow.email == account.email)
+    ).all() + [account.email]
 
     # If the meal name has changed such that no meals with that name exist, migrate meal plans to the new name
     for email in emails:
@@ -220,7 +294,7 @@ async def update_meal(
 async def get_meals(
     sess: Annotated[Session, Depends(db_session)],
     account: Annotated[AccountDTO, Depends(get_current_user)],
-    category: Optional[Category] = None,
+    category: Optional[str] = None,
 ):
     """Gets all meals from the users account. Optionally filters by category"""
 
@@ -234,11 +308,32 @@ async def get_meals(
     return meals
 
 
-def create_followed_meals_expr(sess: Session, email: str, category: Optional[Category]):
+def get_user_meal_categories(sess: Session, email: str) -> list[str]:
+    """
+    Gets a list of all meal categories featured in this users meal set.
+    """
+    base_meals = create_followed_meals_expr(sess, email, None).subquery()
+    base_meals = aliased(Meal, base_meals)
+
+    return sess.exec(select(Meal.category).select_from(base_meals)).unique().all()
+
+
+@app.get("/meal/categories", response_model=list[str])
+async def get_user_categories(
+    sess: Annotated[Session, Depends(db_session)],
+    account: Annotated[AccountDTO, Depends(get_current_user)],
+):
+    """Gets all categories featured in user meals"""
+
+    return get_user_meal_categories(sess, account.email)
+
+
+def create_followed_meals_expr(sess: Session, email: str, category: Optional[str]):
     """Creates a Sqlmodel expression that gets all meals for this user and their followed users, for a given category"""
     # Create a list of all emails meals can be from
-    followers = sess.exec(select(Follow).where(Follow.followingEmail == email)).all()
-    follower_ids = [f.email for f in followers]
+    follower_ids = sess.exec(
+        select(Follow.email).where(Follow.followingEmail == email)
+    ).all()
     follower_ids.append(email)
 
     # All meals from this user or followers, of a given category
@@ -251,7 +346,7 @@ def create_followed_meals_expr(sess: Session, email: str, category: Optional[Cat
 
 
 def get_followed_meals(
-    sess: Session, account: AccountDTO, category: Optional[Category]
+    sess: Session, account: AccountDTO, category: Optional[str]
 ) -> list[Meal]:
     """Gets all meals for this user and their followed users, for a given category"""
 
@@ -262,7 +357,7 @@ def get_followed_meals(
 async def get_meals_with_follower(
     sess: Annotated[Session, Depends(db_session)],
     account: Annotated[AccountDTO, Depends(get_current_user)],
-    category: Optional[Category] = None,
+    category: Optional[str] = None,
 ):
     """Gets all meals from the users account, and followed accounts. Optionally filters by category"""
 
@@ -273,7 +368,7 @@ def create_recc(
     sess: Session,
     account: AccountDTO,
     date: datetime.date,
-    category: Optional[Category] = None,
+    category: Optional[str] = None,
 ) -> Optional[str]:
     """Creates a recommendation for a single day for a user. Returns meal name, or none if user has no meals in
     category. Pass no category to get a random meal category."""
@@ -283,12 +378,15 @@ def create_recc(
     if len(meals) == 0:
         return None
 
+    choices_q = select(MealPlanDay.mealName, MealPlanDay.mealPlanDate).where(
+        account.email == MealPlanDay.email
+    )
+
+    if category:
+        choices_q = choices_q.where(Meal.category == category)
+
     # List of (meal name, day chosen)
-    past_choices: list[tuple[str, datetime.date]] = sess.exec(
-        select(MealPlanDay.mealName, MealPlanDay.mealPlanDate).where(
-            account.email == MealPlanDay.email
-        )
-    ).all()
+    past_choices: list[tuple[str, datetime.date]] = sess.exec(choices_q).all()
 
     result = construct_pmf(meals, past_choices, date)
 
@@ -300,7 +398,7 @@ async def generate_recommend(
     sess: Annotated[Session, Depends(db_session)],
     account: Annotated[AccountDTO, Depends(get_current_user)],
     day: datetime.date,
-    category: Optional[Category] = None,
+    category: Optional[str] = None,
 ):
     """Creates a recommendation for a given day. Optionally filter by category."""
     result = create_recc(sess, account, day, category)
@@ -325,7 +423,7 @@ async def update_plan(
     old_plan = sess.exec(
         select(MealPlanDay)
         .where(MealPlanDay.email == account.email)
-        .where(MealPlanDay.mealPlanDate)
+        .where(MealPlanDay.mealPlanDate == chosen.mealPlanDate)
     ).one_or_none()
 
     if old_plan:
@@ -356,6 +454,12 @@ async def get_plans(
 async def login(request: Request, not_login=Depends(ensure_user_not_logged_in)):
     """Login page. Will redirect to home if already logged in."""
     return templates.TemplateResponse("login.html.jinja", {"request": request})
+
+
+@app.get("/signup")
+async def signup(request: Request, not_login=Depends(ensure_user_not_logged_in)):
+    """Signup page. Will redirect to home if already logged in."""
+    return templates.TemplateResponse("signup.html.jinja", {"request": request})
 
 
 @app.post("/signup", status_code=201, response_model=AccountDTO)

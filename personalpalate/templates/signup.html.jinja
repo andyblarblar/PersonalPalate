@@ -1,6 +1,7 @@
 {% extends "common.html.jinja" %}
 
 {% block head %}
+<link rel="stylesheet" href="static/css/signup.css"/>
 <link rel="stylesheet" href="static/css/landing.css"/>
 {% endblock %}
 
@@ -18,8 +19,8 @@
                 <div class="divider"></div>
             </div>
         </div>
-        <div class="title-text">Sign In</div>
-        <form id="login" class="frame-parent1" action="/token" method="post">
+        <div class="title-text">Sign Up</div>
+        <form class="frame-parent1" action="/signup" id="signup" method="post">
             <div class="frame-wrapper">
                 <div class="frame-parent2">
                     <div class="line-group">
@@ -33,10 +34,16 @@
                     <div class="frame-parent3">
                         <div class="input-group">
                             <div class="input">
-                                <input class="rectangle-text-input" type="email" id="email" name="username" required />
-                                <label for="email">Email</label>
+                                <input class="rectangle-text-input" type="text" id="name" name="name" required />
+                                <label for="name">Name</label>
                             </div>
                             <div class="input">
+                                <input class="rectangle-text-input" type="email" id="email" name="email" required />
+                                <label for="email">Email</label>
+                            </div>
+                        </div>
+                        <div class="input-wrapper">
+                            <div class="stretched-input">
                                 <input class="rectangle-text-input" type="password" id="password" name="password" required />
                                 <label for="password">Password</label>
                             </div>
@@ -45,17 +52,18 @@
                 </div>
             </div>
             <div class="invalid-credentials" id="invalid" hidden>
-                Invalid username/password
+                Email already in use!
             </div>
-            <input type="submit" class="button" value="Sign In" />
-            <div class="navigate-to-new-page-container" id="returnToSignUp">
-                New user?
-                <span class="link-text">Create an account</span>
+            <input type="submit" class="button" value="Create Account" />
+            <div class="navigate-to-new-page-container" id="returnToSignIn">
+                Already have an account? Return to
+                <span class="link-text">Sign In</span>
             </div>
         </form>
     </div>
 </div>
 {% endblock %}
+
 {% block scripts %}
 <script src="static/js/user.js"></script>
 {% endblock %}

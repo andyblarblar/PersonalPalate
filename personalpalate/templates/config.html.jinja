@@ -1,0 +1,25 @@
+{% extends "common.html.jinja" %}
+
+{% block head %}
+<link rel="stylesheet" href="static/css/config.css">
+{% block stylesheets %} {% endblock %}
+{% endblock %}
+
+{% block body %}
+<div class="page-container">
+    <div class="menu-container">
+        <div class="gear-icon">
+            <img src="static/public/settings_gear.png" alt="gear"/>
+        </div>
+        <div class="menu-content">
+            {% block menu_content %}
+            {% endblock %}
+        </div>
+    </div>
+    {% block modal %}
+    {% endblock %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

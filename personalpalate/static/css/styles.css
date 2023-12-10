@@ -1,0 +1,213 @@
+body {
+  margin: 0;
+  line-height: normal;
+}
+
+:root {
+  /* fonts */
+  --button-text-button-text-semi-bold-12: Montserrat;
+  --text-14: Lato;
+  --font-inter: Inter;
+
+  /* font sizes */
+  --body-text-body-text-12-medium-size: 12px;
+  --text-14-size: 14px;
+  --text-16-size: 16px;
+  --button-text-button-text-semi-bold-12-size: 13px;
+  --title-text-title-3-size: max(1.5vw, 15px);
+  --font-size-5xl: 24px;
+
+  /* Colors */
+  --light-light-grey: #f4f6f7;
+  --color-whitesmoke-100: #eaeaea;
+  --grey-100: rgba(245, 245, 247, 0.57);
+  --white: #fff;
+  --grey-200: #e3e6eb;
+  --color-gainsboro-100: #d9d9d9;
+  --color-darkslateblue-100: #6761a8;
+  --brand-light: #475284;
+  --brand-default: #363d63;
+  --brand-dark: #1f2233;
+  --color-gray-100: #121212;
+  --color-gray-200: rgba(31, 34, 51, 0.1);
+  --grey-500: #3a3c40;
+  --grey-300: #babfc5;
+  --grey-400: #5e6893;
+  --primary-500: #2940d3;
+  --color-black: #000;
+  --color-invalid: #c91b1b;
+
+  /* Gaps */
+  --gap-11xl: 30px;
+  --gap-3xs: 10px;
+  --gap-7xs: 6px;
+  --gap-5xs: 8px;
+  --gap-xl: 1.5vh;
+  --gap-9xl: 28px;
+  --gap-base: 0.5vw;
+  --gap-141xl: 160px;
+
+  /* Paddings */
+  --padding-171xl: 190px;
+  --padding-536xl: 555px;
+  --padding-3xs: 10px;
+  --padding-lg: 18px;
+  --padding-sm: 14px;
+  --padding-5xs: 8px;
+  --padding-5xl: 24px;
+  --padding-7xs: 6px;
+  --padding-9xs: 4px;
+  --padding-xl: 20px;
+  --padding-base: 16px;
+  --padding-mini: 15px;
+
+  /* Border radiuses */
+  --br-base: 16px;
+  --br-5xs: 8px;
+  --br-9xs: 4px;
+  --br-12xs: 1px;
+  --br-7xs: 6px;
+  --br-3xs: 10px;
+  --br-4xs: 9px;
+  --br-11xl: 30px;
+
+  /* Effects */
+  --shadow-card: 0px 7px 20px rgba(40, 41, 61, 0.08);
+
+  /* Calendar Variables */
+  --calendar-bg-color: white;
+  --calendar-font-color: var(--grey-500);
+  --weekdays-border-bottom-color: var(--grey-200);
+  --calendar-date-hover-color: #505050;
+  --calendar-current-date-color: var(--grey-200);
+  --calendar-today-color: linear-gradient(to bottom, #03a9f4, #2196f3);
+  --calendar-today-innerborder-color: transparent;
+  --calendar-nextprev-bg-color: transparent;
+  --next-prev-arrow-color : var(--grey-500);
+  --calendar-border-radius: 16px;
+  --calendar-prevnext-date-color: var(--grey-300);
+}
+
+.date-icon-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  position: relative;
+  gap: var(--gap-3xs);
+  mix-blend-mode: normal;
+}
+
+.combined-shape-icon1 {
+  position: relative;
+  width: min(101px, max(7vw, 50px));
+  height: min(101px, max(7vw, 50px));
+  z-index: 0;
+}
+
+.divider, .divider-container {
+  position: absolute;
+}
+
+.divider {
+  height: 100%;
+  width: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: var(--br-12xs);
+  background-color: var(--brand-light);
+}
+
+.divider-container {
+  margin: 0 !important;
+  height: 12.54%;
+  width: 62.49%;
+  top: 37.22%;
+  right: 19.05%;
+  bottom: 50.25%;
+  left: 18.46%;
+  opacity: 0.6;
+  mix-blend-mode: normal;
+  z-index: 1;
+}
+
+.page-container {
+  position: relative;
+  background-color: var(--color-whitesmoke-100);
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  text-align: left;
+  font-size: max(3vw, 23px);
+  color: var(--brand-light);
+  font-family: var(--button-text-button-text-semi-bold-12);
+}
+
+/* Modal content provided by https://www.w3schools.com/howto/howto_css_modals.asp */
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+    position: relative;
+  background-color: var(--color-whitesmoke-100);
+  margin: 15% auto; /* 15% from the top and centered */
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+animation-name: animatetop;
+  animation-duration: 0.4s
+}
+
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Modal Header */
+.modal-header {
+  padding: 2px 16px;
+  text-align: center;
+  color: var(--brand-default);
+}
+
+/* Modal Body */
+.modal-body {
+  padding: 2px 16px;
+  text-align: center;
+}
+
+@keyframes animatetop {
+  from {top: -300px; opacity: 0}
+  to {top: 0; opacity: 1}
+}
+
+.form-button {
+    border-radius: 15px;
+    padding: 5px;
+    cursor: pointer;
+}
