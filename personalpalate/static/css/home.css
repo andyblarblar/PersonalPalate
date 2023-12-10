@@ -9,6 +9,7 @@
     align-items: center;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 2fr 1fr;
+    min-height: 750px;
 }
 
 .container {
@@ -51,11 +52,6 @@
     padding-left: 8px;
     padding-right: 8px;
     position: relative;
-}
-
-.divider-container {
-    width: 16%;
-    left: 6.5%;
 }
 
 .brand-description {
@@ -301,4 +297,8 @@ label {
     font-size: 16px;
     font-weight: 600;
     color: var(--grey-500);
+}
+
+.date-icon-container {
+    width: fit-content;
 }

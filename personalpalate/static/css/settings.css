@@ -20,7 +20,7 @@
     background-color: var(--grey-200);
     box-shadow: 0 3px 8px 0 rgba(0, 0, 0, 0.08);
     color: var(--brand-dark);
-    font-size: 14px;
+    font-size: min(14px, .4em);
     font-weight: 600;
     overflow: hidden;
     justify-self: center;
