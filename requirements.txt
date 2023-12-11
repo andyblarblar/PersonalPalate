@@ -6,3 +6,4 @@ sqlmodel
 uvicorn
 jinja2
 pymysql
+bcrypt
