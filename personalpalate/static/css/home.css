@@ -223,7 +223,7 @@
 }
 
 .calendar .calendar-inner .calendar-body .calendar-today {
-    background: var(--calendar-today-color);
+    background: var(--calendar-today-color) !important;
     border-radius: 4px;
 }
 
@@ -232,6 +232,19 @@
 }
 
 .calendar .calendar-inner .calendar-body .calendar-today a {
+    outline: 2px solid var(--calendar-today-innerborder-color);
+}
+
+.calendar .calendar-inner .calendar-body .calendar-meal {
+    background: var(--calendar-meal-color);
+    border-radius: 4px;
+}
+
+.calendar .calendar-inner .calendar-body .calendar-meal:hover {
+    border: 1px solid transparent;
+}
+
+.calendar .calendar-inner .calendar-body .calendar-meal a {
     outline: 2px solid var(--calendar-today-innerborder-color);
 }
 
@@ -301,4 +314,36 @@ label {
 
 .date-icon-container {
     width: fit-content;
+}
+
+.meal-plan-table {
+    margin: auto;
+    display: none;
+    border: 2px solid black;
+    border-spacing: 10px;
+}
+
+.table-entry {
+    display: table-row;
+}
+
+.table-date {
+    display: table-cell;
+    font-size: 14px;
+}
+
+.table-category {
+    display: table-cell;
+    font-size: 14px;
+}
+
+.table-meal-name {
+    display: table-cell;
+    font-size: 14px;
+}
+
+.meal-button {
+    margin: 5px auto;
+    background-color: var(--grey-300);
+    width: 25%;
 }

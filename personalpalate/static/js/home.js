@@ -5,10 +5,11 @@ const changeMeal = document.getElementById("changeMeal");
 const modal = document.getElementById("modal");
 const closeModal = document.getElementById("close");
 const multiMeal = document.getElementById("multiMeal");
-const multiMealForm = document.getElementById("multiMealPlanForm");
 const addMeals = document.getElementById("addMeals");
 const createMeals = document.getElementById("createMeals");
 const settings = document.getElementById("settings");
+const mealPlanTable = document.getElementById("mealPlanTable");
+const endDate = document.getElementById("endDate");
 
 logout.addEventListener("click", () => {
     window.location = '/logout';
@@ -31,43 +32,6 @@ mealForm.addEventListener("submit", (event) => {
       configureMealsContainer();
     }
   });
-});
-
-multiMealForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const startDate = document.getElementById("startDate").value;
-  const endDate = document.getElementById("endDate").value;
-
-  if (!startDate || !endDate) {
-    alert("One of the dates is blank!");
-  } else {
-    const ms = Math.abs(new Date(endDate) - new Date(startDate));
-    const days = ms / 1000 / 60 / 60 / 24;
-    if (days === 0) {
-      getRecommendation("any", startDate).then((plan) => {
-        const recommendedMeal = plan.mealName;
-        const shouldSaveMeal = confirm(`Recommended Meal: ${recommendedMeal}. Select OK to save or Cancel to discard the recommendation.`);
-
-        if (shouldSaveMeal) {
-          saveMeal(plan, true);
-          configureMealsContainer();
-        }
-      });
-    }
-    let end = convertDateToUTC(new Date(endDate));
-    let loop = convertDateToUTC(new Date(startDate));
-    while (loop <= end) {
-      const date = loop.toISOString().split("T")[0];
-      getRecommendation("any", date).then((plan) => {
-        saveMeal(plan, false);
-      });
-      const newDate = loop.setDate(loop.getDate() + 1);
-      loop = new Date(newDate);
-    }
-    configureMealsContainer();
-    modal.style.display = "none";
-  }
 });
 
 changeMeal.addEventListener("click", () => {
@@ -106,6 +70,123 @@ createMeals.addEventListener("click", () => {
 window.onclick = function(event) {
   if (event.target === modal) modal.style.display = "none";
 }
+
+endDate.addEventListener("change", async () => {
+  const startDate = document.getElementById("startDate");
+  if (startDate.value) {
+    if (mealPlanTable.childElementCount > 0) {
+      deleteChildNodes(mealPlanTable)
+    }
+
+    mealPlanTable.style.display = "table";
+
+    let end = convertDateToUTC(new Date(endDate.value));
+    let loop = convertDateToUTC(new Date(startDate.value));
+
+    const categoriesSelect = document.createElement("select");
+    const anyOption = document.createElement("option");
+    anyOption.value = "any";
+    anyOption.innerText = "Any category";
+    categoriesSelect.appendChild(anyOption);
+
+    const categories = await getCategories();
+    if (!categories) {
+      alert("Add meals to create a meal plan!");
+      return;
+    }
+
+    categories.forEach((category) => {
+      let option = document.createElement("option");
+      const capitalized = category.charAt(0).toUpperCase() + category.slice(1);
+      option.value = category;
+      option.textContent = capitalized;
+      categoriesSelect.appendChild(option);
+    });
+
+    categoriesSelect.value = "any";
+
+    while (loop <= end) {
+      const date = loop.toISOString().split("T")[0];
+
+      const tableRow = document.createElement("div");
+      tableRow.classList.add("table-entry");
+
+      const dateEntry = document.createElement("div");
+      dateEntry.classList.add("table-date");
+      dateEntry.innerText = date;
+
+      const categoryEntry = document.createElement("div");
+      categoryEntry.classList.add("table-category");
+      categoryEntry.appendChild(categoriesSelect.cloneNode(true));
+
+      tableRow.appendChild(dateEntry);
+      tableRow.appendChild(categoryEntry);
+
+      mealPlanTable.appendChild(tableRow);
+      const newDate = loop.setDate(loop.getDate() + 1);
+      loop = new Date(newDate);
+    }
+
+    const recommendationsButton = document.createElement("div");
+    recommendationsButton.classList.add("button", "meal-button");
+    recommendationsButton.innerText = "Get Recommendations";
+    recommendationsButton.addEventListener("click", async () => {
+      for (const child of mealPlanTable.children) {
+        const date = child.children[0].innerText;
+        const category = child.children[1].firstChild.value;
+
+        const recommendation = await getRecommendation(category, date);
+
+        if (child.children.length === 3) {
+          child.children[2].innerText = recommendation.mealName;
+        } else {
+          const mealNameEntry = document.createElement("div");
+          mealNameEntry.classList.add("table-meal-name");
+          mealNameEntry.innerText = recommendation.mealName;
+          child.appendChild(mealNameEntry);
+        }
+      }
+
+      if (mealPlanTable.parentNode.children.length === 2) {
+        const saveMeals = document.createElement("div");
+        saveMeals.classList.add("button", "meal-button");
+        saveMeals.innerText = "Save Meals";
+
+        saveMeals.addEventListener("click", () => {
+          for (const child of mealPlanTable.children) {
+            const date = child.children[0].innerText;
+            const mealName = child.children[2].innerText;
+
+            const data = {
+              mealPlanDate: date,
+              mealName: mealName
+            }
+            saveMeal(data, false);
+          }
+          configureMealsContainer();
+          modal.style.display = "none";
+          startDate.value = "";
+          endDate.value = "";
+          deleteChildNodes(mealPlanTable);
+          mealPlanTable.style.display = "none";
+          mealPlanTable.parentNode.removeChild(saveMeals);
+          mealPlanTable.parentNode.removeChild(recommendationsButton);
+          location.reload()
+        });
+
+        mealPlanTable.parentNode.appendChild(saveMeals);
+      }
+    });
+    mealPlanTable.parentNode.appendChild(recommendationsButton);
+  }
+});
+
+
+function deleteChildNodes(element) {
+  while (element.firstChild)
+    element.removeChild(element.lastChild);
+}
+
 
 async function saveMeal(mealPlan, informUser) {
   const data = {
@@ -305,7 +386,6 @@ function CalendarControl() {
         monthLabel.innerHTML = calendarControl.calMonthName[calendar.getMonth()];
       },
       selectDate: function (e) {
-          // Date logged to console here. Need to instead check if meal plan exists for clicked date.
         let date = {
           "day": `${e.target.textContent}`,
           "month": calendar.getMonth()+1,
@@ -313,7 +393,6 @@ function CalendarControl() {
         }
         calendarControl.selectedDate = date;
         calendarControl.highlightDate(date);
-
       },
       plotSelectors: function () {
         document.querySelector(
@@ -342,13 +421,22 @@ function CalendarControl() {
           ).innerHTML += `<div>${calendarControl.calWeekDays[i]}</div>`;
         }
       },
-      plotDates: function () {
+      plotDates: async function () {
         document.querySelector(".calendar .calendar-body").innerHTML = "";
         calendarControl.plotDayNames();
         calendarControl.displayMonth();
         calendarControl.displayYear();
         let count = 1;
         let prevDateCount = 0;
+        let date = `${calendar.getFullYear()}-${(calendar.getMonth()+1).toString().padStart(2, "0")}-`;
+
+        let response = await fetch("/plans");
+        let mealPlans = await response.json();
+
+        const plansByDate = {};
+        mealPlans.forEach(plan => {
+          plansByDate[plan.mealPlanDate] = plan;
+        });
 
         calendarControl.prevMonthLastDate = calendarControl.getPreviousMonthLastDate();
         let prevMonthDatesArray = [];
@@ -365,16 +453,25 @@ function CalendarControl() {
             ).innerHTML += `<div class="prev-dates"></div>`;
             prevMonthDatesArray.push(calendarControl.prevMonthLastDate--);
           } else {
-            document.querySelector(
-              ".calendar .calendar-body"
-            ).innerHTML += `<div class="number-item" data-num=${count}><a class="dateNumber" href="#">${count++}</a></div>`;
+            const day = count.toString().padStart(2, "0");
+
+            if (plansByDate.hasOwnProperty(`${date}${day}`)) {
+              document.querySelector(".calendar .calendar-body").innerHTML
+                += `<div class="number-item calendar-meal" data-num=${count}><a class="dateNumber" href="#">${count++}</a></div>`;
+            } else
+            document.querySelector(".calendar .calendar-body").innerHTML
+                += `<div class="number-item" data-num=${count}><a class="dateNumber" href="#">${count++}</a></div>`;
           }
         }
         //remaining dates after month dates
         for (let j = 0; j < prevDateCount + 1; j++) {
-          document.querySelector(
-            ".calendar .calendar-body"
-          ).innerHTML += `<div class="number-item" data-num=${count}><a class="dateNumber" href="#">${count++}</a></div>`;
+          const day = count.toString().padStart(2, "0");
+          if (plansByDate.hasOwnProperty(`${date}${day}`)) {
+            document.querySelector(".calendar .calendar-body").innerHTML
+              += `<div class="number-item calendar-meal" data-num=${count}><a class="dateNumber" href="#">${count++}</a></div>`;
+          } else
+          document.querySelector(".calendar .calendar-body").innerHTML
+              += `<div class="number-item" data-num=${count}><a class="dateNumber" href="#">${count++}</a></div>`;
         }
         if (calendarControl.selectedDate) {
           calendarControl.highlightDate(calendarControl.selectedDate);
@@ -482,13 +579,15 @@ function CalendarControl() {
         }
       },
       attachEventsOnNextPrev: function () {
-        calendarControl.plotDates();
-        calendarControl.attachEvents();
+        calendarControl.plotDates().then(() => {
+          calendarControl.attachEvents();
+        });
       },
       init: function () {
         calendarControl.plotSelectors();
-        calendarControl.plotDates();
-        calendarControl.attachEvents();
+        calendarControl.plotDates().then(() => {
+           calendarControl.attachEvents();
+        });
       }
     };
     calendarControl.init();

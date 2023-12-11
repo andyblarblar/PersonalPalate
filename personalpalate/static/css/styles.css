@@ -81,6 +81,7 @@ body {
   --calendar-date-hover-color: #505050;
   --calendar-current-date-color: var(--grey-200);
   --calendar-today-color: linear-gradient(to bottom, #03a9f4, #2196f3);
+  --calendar-meal-color: linear-gradient(to bottom, #03f44f, #03c43b);
   --calendar-today-innerborder-color: transparent;
   --calendar-nextprev-bg-color: transparent;
   --next-prev-arrow-color : var(--grey-500);
