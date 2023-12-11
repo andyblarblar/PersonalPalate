@@ -28,8 +28,7 @@ mealForm.addEventListener("submit", (event) => {
     const shouldSaveMeal = confirm(`Recommended Meal: ${recommendedMeal}. Select OK to save or Cancel to discard the recommendation.`);
 
     if (shouldSaveMeal) {
-      saveMeal(plan, true);
-      configureMealsContainer();
+      saveMeal(plan, true).then(() => window.location.reload());
     }
   });
 });
