@@ -515,7 +515,6 @@ function CalendarControl() {
             calendarMonth === month
         ) {
           document.querySelectorAll(".number-item")[day - 1].classList.add("calendar-today");
-          document.querySelectorAll(".number-item")[day - 1].classList.remove("calendar-meal");
           configureMealsContainer();
         }
 
@@ -537,9 +536,6 @@ function CalendarControl() {
           document
             .querySelectorAll(".number-item")
             [calendar.getDate() - 1].classList.add("calendar-today");
-          document
-              .querySelectorAll(".number-item")
-              [calendar.getDate() - 1].classList.remove("calendar-meal");
           configureMealsContainer();
         }
 
@@ -580,13 +576,15 @@ function CalendarControl() {
         }
       },
       attachEventsOnNextPrev: function () {
-        calendarControl.plotDates();
-        calendarControl.attachEvents();
+        calendarControl.plotDates().then(() => {
+          calendarControl.attachEvents();
+        });
       },
       init: function () {
         calendarControl.plotSelectors();
-        calendarControl.plotDates();
-        calendarControl.attachEvents();
+        calendarControl.plotDates().then(() => {
+           calendarControl.attachEvents();
+        });
       }
     };
     calendarControl.init();

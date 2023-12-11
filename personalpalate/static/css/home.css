@@ -223,7 +223,7 @@
 }
 
 .calendar .calendar-inner .calendar-body .calendar-today {
-    background: var(--calendar-today-color);
+    background: var(--calendar-today-color) !important;
     border-radius: 4px;
 }
 
