@@ -418,13 +418,22 @@ function CalendarControl() {
           ).innerHTML += `<div>${calendarControl.calWeekDays[i]}</div>`;
         }
       },
-      plotDates: function () {
+      plotDates: async function () {
         document.querySelector(".calendar .calendar-body").innerHTML = "";
         calendarControl.plotDayNames();
         calendarControl.displayMonth();
         calendarControl.displayYear();
         let count = 1;
         let prevDateCount = 0;
+        let date = `${calendar.getFullYear()}-${(calendar.getMonth()+1).toString().padStart(2, "0")}-`;
+
+        let response = await fetch("/plans");
+        let mealPlans = await response.json();
+
+        const plansByDate = {};
+        mealPlans.forEach(plan => {
+          plansByDate[plan.mealPlanDate] = plan;
+        });
 
         calendarControl.prevMonthLastDate = calendarControl.getPreviousMonthLastDate();
         let prevMonthDatesArray = [];
@@ -441,12 +450,23 @@ function CalendarControl() {
             ).innerHTML += `<div class="prev-dates"></div>`;
             prevMonthDatesArray.push(calendarControl.prevMonthLastDate--);
           } else {
+            const day = count.toString().padStart(2, "0");
+
+            if (plansByDate.hasOwnProperty(`${date}${day}`)) {
+              document.querySelector(".calendar .calendar-body").innerHTML
+                += `<div class="number-item calendar-meal" data-num=${count}><a class="dateNumber" href="#">${count++}</a></div>`;
+            } else
             document.querySelector(".calendar .calendar-body").innerHTML
                 += `<div class="number-item" data-num=${count}><a class="dateNumber" href="#">${count++}</a></div>`;
           }
         }
         //remaining dates after month dates
         for (let j = 0; j < prevDateCount + 1; j++) {
+          const day = count.toString().padStart(2, "0");
+          if (plansByDate.hasOwnProperty(`${date}${day}`)) {
+            document.querySelector(".calendar .calendar-body").innerHTML
+              += `<div class="number-item calendar-meal" data-num=${count}><a class="dateNumber" href="#">${count++}</a></div>`;
+          } else
           document.querySelector(".calendar .calendar-body").innerHTML
               += `<div class="number-item" data-num=${count}><a class="dateNumber" href="#">${count++}</a></div>`;
         }
@@ -495,6 +515,7 @@ function CalendarControl() {
             calendarMonth === month
         ) {
           document.querySelectorAll(".number-item")[day - 1].classList.add("calendar-today");
+          document.querySelectorAll(".number-item")[day - 1].classList.remove("calendar-meal");
           configureMealsContainer();
         }
 
@@ -516,6 +537,9 @@ function CalendarControl() {
           document
             .querySelectorAll(".number-item")
             [calendar.getDate() - 1].classList.add("calendar-today");
+          document
+              .querySelectorAll(".number-item")
+              [calendar.getDate() - 1].classList.remove("calendar-meal");
           configureMealsContainer();
         }
 
