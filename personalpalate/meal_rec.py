@@ -2,14 +2,16 @@ from collections import Counter, defaultdict
 from datetime import timedelta
 import datetime
 import random
+from typing import Optional
+
 from .orm.model import MealDTO
 
 
 def construct_pmf(
     meals: list[MealDTO],
     past_choices: list[tuple[str, datetime.date]],
-    date: datetime.date,
-) -> str:
+    days: list[tuple[datetime.date, Optional[str]]],  # date, category requested
+) -> list[str]:
     """
     # Function to construct the probability mass function for the dataset
     # Parameters
@@ -18,62 +20,74 @@ def construct_pmf(
     # Returns: meal_selection (type: string): selected meal from PMF
     """
 
-    # frequency of each mealName in the dataset
-    freq = Counter(m.mealName for m in meals)
-    total_count = len(meals)
+    out = []
 
-    # Constructing the PMF based on the frequency in the dataset
-    pmf = {value: freq[value] / total_count for value in freq}
+    for date, category in days:
+        # Filter to chosen category for day
+        meals_filtered = list(
+            m for m in meals if category is None or m.category == category
+        )
 
-    print(f"Inital pmf: {pmf}")
+        # frequency of each mealName in the dataset
+        freq = Counter(m.mealName for m in meals_filtered)
+        total_count = len(meals_filtered)
 
-    # apply recency_weight
-    for meal_name, meal_date in past_choices:
-        # Meal plans can reference deleted meals, so just skip them if that is the case as we should only recommend
-        # meals in the input dataset.
-        if meal_name not in pmf:
-            continue
+        # Constructing the PMF based on the frequency in the dataset
+        pmf = {value: freq[value] / total_count for value in freq}
 
-        recency_weight = 1 / max(float((date - meal_date).days), 0.01)
+        print(f"Inital pmf: {pmf}\n")
 
-        # taking n-th root of probability - as distance increases, n increases
-        pmf[meal_name] = pmf[meal_name] ** recency_weight
+        # apply recency_weight
+        for meal_name, meal_date in past_choices:
+            # Meal plans can reference deleted meals, so just skip them if that is the case as we should only recommend
+            # meals in the input dataset.
+            if meal_name not in pmf:
+                continue
 
-    print(f"After recently: {pmf}")
+            recency_weight = 1 / max(float((date - meal_date).days), 0.01)
 
-    # create a dictionary to hold each meal and the dates cooked
-    meal_dict = defaultdict(list)
-    for meal in meals:
-        meal_dict[meal.mealName].append(meal.dateMade)
+            # taking n-th root of probability - as distance increases, n increases
+            pmf[meal_name] = pmf[meal_name] ** recency_weight
 
-    # compute the sum of dates for each meal
-    average_day_meal = {}
-    for meal, dates in meal_dict.items():
-        total_day_num = sum(d.timetuple().tm_yday for d in dates)
-        # compute the average day of each meal
-        avg_day = total_day_num / len(dates)
-        average_day_meal[meal] = int(avg_day)
+        print(f"After recently: {pmf}\n")
 
-    # apply seasonal weight
-    for meal in average_day_meal:
-        difference_date = date - timedelta(days=average_day_meal[meal])
-        distance = difference_date.timetuple().tm_yday
-        seasonal_weight = 1 / distance
-        pmf[meal] *= seasonal_weight
+        # create a dictionary to hold each meal and the dates cooked
+        meal_dict = defaultdict(list)
+        for meal in meals_filtered:
+            meal_dict[meal.mealName].append(meal.dateMade)
 
-    print(f"After seasonal: {pmf}")
+        # compute the sum of dates for each meal
+        average_day_meal = {}
+        for meal, dates in meal_dict.items():
+            total_day_num = sum(d.timetuple().tm_yday for d in dates)
+            # compute the average day of each meal
+            avg_day = total_day_num / len(dates)
+            average_day_meal[meal] = int(avg_day)
 
-    # calculate the adjusted total probability for normalization
-    total_probability = sum(pmf.values())
+        # apply seasonal weight
+        for meal in average_day_meal:
+            difference_date = date - timedelta(days=average_day_meal[meal])
+            distance = difference_date.timetuple().tm_yday
+            seasonal_weight = 1 / distance
+            pmf[meal] *= seasonal_weight
 
-    # normalize the PMF
-    for meal_name in pmf:
-        pmf[meal_name] /= total_probability
+        print(f"After seasonal: {pmf}\n")
 
-    print(f"After normalizing: {pmf}")
-    # select a meal based on the probability
-    meal_selection = random.choices(list(pmf.keys()), weights=list(pmf.values()), k=1)[
-        0
-    ]
+        # calculate the adjusted total probability for normalization
+        total_probability = sum(pmf.values())
 
-    return meal_selection
+        # normalize the PMF
+        for meal_name in pmf:
+            pmf[meal_name] /= total_probability
+
+        print(f"After normalizing: {pmf}\n")
+        # select a meal based on the probability
+        meal_selection = random.choices(
+            list(pmf.keys()), weights=list(pmf.values()), k=1
+        )[0]
+        out.append(meal_selection)
+
+        # Treat recommendations as chosen meals to prevent the same thing from being recommended over and over
+        past_choices.append((meal_selection, date))
+
+    return out

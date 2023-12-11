@@ -365,16 +365,20 @@ async def get_meals_with_follower(
     return get_followed_meals(sess, account, category)
 
 
+class RecommendRequests(BaseModel):
+    days: list[datetime.date]
+    categories: list[Optional[str]]
+
+
 def create_recc(
         sess: Session,
         account: AccountDTO,
-        date: datetime.date,
-        category: Optional[str] = None,
-) -> Optional[str]:
-    """Creates a recommendation for a single day for a user. Returns meal name, or none if user has no meals in
+        recommends: RecommendRequests
+) -> Optional[list[str]]:
+    """Creates a recommendation for many days. Returns meal name, or none if user has no meals in
     category. Pass no category to get a random meal category."""
 
-    meals = get_followed_meals(sess, account, category)
+    meals = get_followed_meals(sess, account, None)
 
     if len(meals) == 0:
         return None
@@ -383,33 +387,25 @@ def create_recc(
         account.email == MealPlanDay.email
     )
 
-    if category:
-        choices_q = choices_q.where(Meal.category == category)
-
     # List of (meal name, day chosen)
     past_choices: list[tuple[str, datetime.date]] = sess.exec(choices_q).all()
 
-    result = construct_pmf(meals, past_choices, date)
+    t = list(zip(recommends.days, recommends.categories))
+    result = construct_pmf(meals, past_choices, t)
 
     return result
 
 
-@app.get("/recommend", response_model=MealPlanDayDTO)
-async def generate_recommend(
+@app.post("/recommend", response_model=list[MealPlanDayDTO])
+async def generate_recommends(
         sess: Annotated[Session, Depends(db_session)],
         account: Annotated[AccountDTO, Depends(get_current_user)],
-        day: datetime.date,
-        category: Optional[str] = None,
+        recommends: RecommendRequests
 ):
-    """Creates a recommendation for a given day. Optionally filter by category."""
-    result = create_recc(sess, account, day, category)
+    """Creates a recommendation for many days. Optionally filter by category."""
+    result = create_recc(sess, account, recommends)
 
-    if result is None:
-        raise HTTPException(
-            400, f"User does not have any meals of category: {category}"
-        )
-
-    return MealPlanDayDTO(mealName=result, mealPlanDate=day)
+    return [MealPlanDayDTO(mealName=r, mealPlanDate=d) for r, d in zip(result, recommends.days)]
 
 
 @app.put("/plans", status_code=200, response_model=MealPlanDayDTO)
