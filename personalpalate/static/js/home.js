@@ -23,10 +23,13 @@ mealForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
   const selectedCategory = document.getElementById("categories").value;
-  getRecommendation(selectedCategory).then((plan) => {
-    const recommendedMeal = plan.mealName;
+  const days = [`${document.getElementById("selectedDate").innerText}`];
+  const categories = [selectedCategory];
+  getRecommendation(days, categories).then().then((recommendation) => {
+    const recommendedMeal = recommendation[0].mealName;
     const shouldSaveMeal = confirm(`Recommended Meal: ${recommendedMeal}. Select OK to save or Cancel to discard the recommendation.`);
 
+    const plan = recommendation[0];
     if (shouldSaveMeal) {
       saveMeal(plan, true).then(() => window.location.reload());
     }
@@ -138,21 +141,31 @@ endDate.addEventListener("change", async () => {
     recommendationsButton.innerText = "Get Recommendations";
     recommendationsButton.id = "massRecommendButton";
     recommendationsButton.addEventListener("click", async () => {
+      const days = [];
+      const categories = [];
+
       for (const child of mealPlanTable.children) {
         const date = child.children[0].innerText;
         const category = child.children[1].firstChild.value;
 
-        getRecommendation(category, date).then((recommendation) => {
+        days.push(date);
+        categories.push(category)
+      }
+
+      getRecommendation(days, categories).then().then((recommendations) => {
+        let i = 0;
+        for (const child of mealPlanTable.children) {
           if (child.children.length === 3) {
-            child.children[2].innerText = recommendation.mealName;
+            child.children[2].innerText = recommendations[i].mealName;
           } else {
             const mealNameEntry = document.createElement("div");
             mealNameEntry.classList.add("table-meal-name");
-            mealNameEntry.innerText = recommendation.mealName;
+            mealNameEntry.innerText = recommendations[i].mealName;
             child.appendChild(mealNameEntry);
           }
-        });
-      }
+          i++;
+        }
+      });
 
       if (mealPlanTable.parentNode.children.length === 2) {
         const saveMeals = document.createElement("div");
@@ -189,12 +202,10 @@ endDate.addEventListener("change", async () => {
   }
 });
 
-
 function deleteChildNodes(element) {
   while (element.firstChild)
     element.removeChild(element.lastChild);
 }
-
 
 async function saveMeal(mealPlan, informUser) {
   const data = {
@@ -219,16 +230,31 @@ async function saveMeal(mealPlan, informUser) {
   }
 }
 
-async function getRecommendation(category, date) {
-  let url = "/recommend?day=";
-  if (date) {
-    url += date;
-  } else url += `${document.getElementById("selectedDate").innerText}`
-  if (category !== "any") url += "&category=" + category;
+async function getRecommendation(days, submittedCategories) {
+  const categories = [];
+  for(let i = 0; i < submittedCategories.length; i++) {
+    if (submittedCategories[i] === "any") {
+      categories.push(null);
+    } else
+        categories.push(submittedCategories[i]);
+  }
 
-  const response = await fetch(url);
+  const data = {
+    days: days,
+    categories: categories
+  }
 
-  return await response.json();
+  return fetch("/recommend", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+  }).then(async (response) => {
+    if (response.ok) {
+      return response.json();
+    }
+  });
 }
 
 async function getCategories() {
