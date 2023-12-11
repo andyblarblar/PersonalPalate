@@ -151,6 +151,7 @@ endDate.addEventListener("change", async () => {
         const saveMeals = document.createElement("div");
         saveMeals.classList.add("button", "meal-button");
         saveMeals.innerText = "Save Meals";
+
         saveMeals.addEventListener("click", () => {
           for (const child of mealPlanTable.children) {
             const date = child.children[0].innerText;
@@ -170,7 +171,9 @@ endDate.addEventListener("change", async () => {
           mealPlanTable.style.display = "none";
           mealPlanTable.parentNode.removeChild(saveMeals);
           mealPlanTable.parentNode.removeChild(recommendationsButton);
+          location.reload()
         });
+
         mealPlanTable.parentNode.appendChild(saveMeals);
       }
     });
