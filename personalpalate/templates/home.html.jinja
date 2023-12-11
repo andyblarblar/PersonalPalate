@@ -50,7 +50,7 @@
                 <div class="meal-text">Select a category to generate a meal!</div>
                 <form action="#" id="recommendation">
                     <label for="categories">Category:</label>
-                    <select name="categories" id="categories">
+                    <select name="categories" id="categories" size="1">
                         <option value="any">Any category</option>
                     </select>
                     <input class="form-button" type="submit" value="Get Recommendation" />
@@ -71,15 +71,17 @@
             <div class="modal-body">
                 <p class="title-text">
                     Select the date range you want to create meal plans for.
-                    <br>This will erase any existing meal plans and the meals can be from any category
+                    <br>This will erase any existing meal plans.
                 </p>
                 <form id="multiMealPlanForm" action="#">
                     <label for="startDate">Start Date</label>
                     <input id="startDate" type="date" />
                     <label for="endDate">End Date</label>
                     <input id="endDate" type="date" />
-                    <input class="form-button" type="submit" value="Create plans" />
                 </form>
+                <div id="meal-plan-creation">
+                    <div class="meal-plan-table" id="mealPlanTable"></div>
+                </div>
             </div>
         </div>
     </div>
