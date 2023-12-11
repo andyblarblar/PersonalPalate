@@ -45,7 +45,7 @@ def on_startup():
 
 @app.get("/")
 async def root(
-    request: Request, account: Annotated[AccountDTO, Depends(get_current_user)]
+        request: Request, account: Annotated[AccountDTO, Depends(get_current_user)]
 ):
     """Home landing page for signed in users"""
     return templates.TemplateResponse(
@@ -55,7 +55,7 @@ async def root(
 
 @app.get("/meals")
 async def meals(
-    request: Request, account: Annotated[AccountDTO, Depends(get_current_user)]
+        request: Request, account: Annotated[AccountDTO, Depends(get_current_user)]
 ):
     return templates.TemplateResponse(
         "meals.html.jinja", {"request": request, "user_email": account.email}
@@ -64,9 +64,9 @@ async def meals(
 
 @app.get("/settings")
 async def settings(
-    request: Request,
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    sess: Annotated[Session, Depends(db_session)]
+        request: Request,
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        sess: Annotated[Session, Depends(db_session)]
 ):
     followable = sess.exec(select(Account.followable).where(Account.email == account.email)).first()
     return templates.TemplateResponse("settings.html.jinja", {"request": request, "name": account.name,
@@ -79,9 +79,9 @@ class FollowData(BaseModel):
 
 @app.post("/account/follow", status_code=201, response_model=Follow)
 async def follow(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    email: FollowData,
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        email: FollowData,
 ):
     """Follows another user, if allowed"""
 
@@ -95,9 +95,9 @@ async def follow(
         )
 
     if sess.exec(
-        select(Follow)
-        .where(Follow.followingEmail == account.email)
-        .where(Follow.email == email.email)
+            select(Follow)
+                    .where(Follow.followingEmail == account.email)
+                    .where(Follow.email == email.email)
     ).first():
         raise HTTPException(200, "Account is already following")
 
@@ -110,8 +110,8 @@ async def follow(
 
 @app.get("/account/follow", response_model=list[Follow])
 async def get_following(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
 ):
     """Returns all followed users"""
 
@@ -120,9 +120,9 @@ async def get_following(
 
 @app.delete("/account/follow")
 async def unfollow(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    email: FollowData,
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        email: FollowData,
 ):
     """
     Unfollows another user. Plans made using that users meals will still exist, but will however not be considered in
@@ -149,9 +149,9 @@ class AccountSettings(BaseModel):
 
 @app.put("/account/settings", response_model=AccountDTO)
 async def update_settings(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    settings: AccountSettings,
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        settings: AccountSettings,
 ):
     """Updates user settings"""
 
@@ -169,9 +169,9 @@ async def update_settings(
 
 @app.post("/meal", status_code=201, response_model=list[Meal])
 async def add_meals(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    meals: list[MealDTO],
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        meals: list[MealDTO],
 ):
     """Adds many meals to the users account. Categories are arbitrary, but are exact."""
 
@@ -195,9 +195,9 @@ class MealCSV(BaseModel):
 
 @app.post("/meal/csv", status_code=201, response_model=list[Meal])
 async def add_meals_csv(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    meal_csv: MealCSV,
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        meal_csv: MealCSV,
 ):
     """
     Adds many meals to the users account from a csv. Each line should be newline seperated. This csv should have the
@@ -209,7 +209,8 @@ async def add_meals_csv(
     if len(uploaded.fieldnames) < 3:
         raise HTTPException(400, "Need header row!")
 
-    meal_rec = [Meal(email=account.email, **m) for m in uploaded]
+    meal_rec = [Meal(email=account.email, category=m["category"], mealName=m["mealName"],
+                     dateMade=datetime.datetime.strptime(m["dateMade"], "%Y-%m-%d")) for m in uploaded]
     sess.add_all(meal_rec)
 
     # Clean categories
@@ -223,9 +224,9 @@ async def add_meals_csv(
 
 @app.delete("/meal")
 async def delete_meals(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    meal: Meal,
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        meal: Meal,
 ):
     """
     Deletes a meal from the users account. If this removes all copies of a meal, then mealplans using it will still
@@ -241,9 +242,9 @@ async def delete_meals(
 
 @app.put("/meal", response_model=Meal)
 async def update_meal(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    meal: Meal,
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        meal: Meal,
 ):
     """
     Updates a users meal. If the meal name is changed and this was the last copy of a meal, all mealplans with the same
@@ -270,14 +271,14 @@ async def update_meal(
     # If the meal name has changed such that no meals with that name exist, migrate meal plans to the new name
     for email in emails:
         if (
-            len(
-                sess.exec(
-                    create_followed_meals_expr(sess, email, None).where(
-                        Meal.mealName == old_meal_name
-                    )
-                ).all()
-            )
-            == 0
+                len(
+                    sess.exec(
+                        create_followed_meals_expr(sess, email, None).where(
+                            Meal.mealName == old_meal_name
+                        )
+                    ).all()
+                )
+                == 0
         ):
             sess.execute(
                 update(MealPlanDay)
@@ -292,9 +293,9 @@ async def update_meal(
 
 @app.get("/meal", response_model=list[Meal])
 async def get_meals(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    category: Optional[str] = None,
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        category: Optional[str] = None,
 ):
     """Gets all meals from the users account. Optionally filters by category"""
 
@@ -320,8 +321,8 @@ def get_user_meal_categories(sess: Session, email: str) -> list[str]:
 
 @app.get("/meal/categories", response_model=list[str])
 async def get_user_categories(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
 ):
     """Gets all categories featured in user meals"""
 
@@ -346,7 +347,7 @@ def create_followed_meals_expr(sess: Session, email: str, category: Optional[str
 
 
 def get_followed_meals(
-    sess: Session, account: AccountDTO, category: Optional[str]
+        sess: Session, account: AccountDTO, category: Optional[str]
 ) -> list[Meal]:
     """Gets all meals for this user and their followed users, for a given category"""
 
@@ -355,9 +356,9 @@ def get_followed_meals(
 
 @app.get("/meal/followed", response_model=list[Meal])
 async def get_meals_with_follower(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    category: Optional[str] = None,
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        category: Optional[str] = None,
 ):
     """Gets all meals from the users account, and followed accounts. Optionally filters by category"""
 
@@ -365,10 +366,10 @@ async def get_meals_with_follower(
 
 
 def create_recc(
-    sess: Session,
-    account: AccountDTO,
-    date: datetime.date,
-    category: Optional[str] = None,
+        sess: Session,
+        account: AccountDTO,
+        date: datetime.date,
+        category: Optional[str] = None,
 ) -> Optional[str]:
     """Creates a recommendation for a single day for a user. Returns meal name, or none if user has no meals in
     category. Pass no category to get a random meal category."""
@@ -395,10 +396,10 @@ def create_recc(
 
 @app.get("/recommend", response_model=MealPlanDayDTO)
 async def generate_recommend(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    day: datetime.date,
-    category: Optional[str] = None,
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        day: datetime.date,
+        category: Optional[str] = None,
 ):
     """Creates a recommendation for a given day. Optionally filter by category."""
     result = create_recc(sess, account, day, category)
@@ -413,9 +414,9 @@ async def generate_recommend(
 
 @app.put("/plans", status_code=200, response_model=MealPlanDayDTO)
 async def update_plan(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
-    chosen: MealPlanDayDTO,
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
+        chosen: MealPlanDayDTO,
 ):
     """Persists a chosen mealplan day, or overwrites an existing one"""
 
@@ -438,8 +439,8 @@ async def update_plan(
 
 @app.get("/plans", response_model=list[MealPlanDayDTO])
 async def get_plans(
-    sess: Annotated[Session, Depends(db_session)],
-    account: Annotated[AccountDTO, Depends(get_current_user)],
+        sess: Annotated[Session, Depends(db_session)],
+        account: Annotated[AccountDTO, Depends(get_current_user)],
 ):
     """Gets all past meal plans the user has saved"""
     return sess.exec(
@@ -464,11 +465,11 @@ async def signup(request: Request, not_login=Depends(ensure_user_not_logged_in))
 
 @app.post("/signup", status_code=201, response_model=AccountDTO)
 async def signup(
-    email: Annotated[str, Form()],
-    password: Annotated[str, Form()],
-    name: Annotated[str, Form()],
-    sess: Annotated[Session, Depends(db_session)],
-    not_login=Depends(ensure_user_not_logged_in),
+        email: Annotated[str, Form()],
+        password: Annotated[str, Form()],
+        name: Annotated[str, Form()],
+        sess: Annotated[Session, Depends(db_session)],
+        not_login=Depends(ensure_user_not_logged_in),
 ):
     """Creates a new account"""
     if sess.get(Account, email):
@@ -485,7 +486,7 @@ async def signup(
 
 @app.post("/token", response_model=Token)
 async def create_token(
-    form: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response
+        form: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response
 ):
     """Creates an OAuth2 token"""
     if passlib.verify_password(form.password, form.username):

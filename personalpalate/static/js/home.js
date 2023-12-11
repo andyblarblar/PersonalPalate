@@ -78,6 +78,13 @@ endDate.addEventListener("change", async () => {
       deleteChildNodes(mealPlanTable)
     }
 
+    const button = document.getElementById("massRecommendButton");
+    const button2 = document.getElementById("saveMealButton");
+    if (button)
+      button.parentNode.removeChild(button);
+    if (button2)
+      button2.parentNode.removeChild(button2);
+
     mealPlanTable.style.display = "table";
 
     let end = convertDateToUTC(new Date(endDate.value));
@@ -130,29 +137,31 @@ endDate.addEventListener("change", async () => {
     const recommendationsButton = document.createElement("div");
     recommendationsButton.classList.add("button", "meal-button");
     recommendationsButton.innerText = "Get Recommendations";
+    recommendationsButton.id = "massRecommendButton";
     recommendationsButton.addEventListener("click", async () => {
       for (const child of mealPlanTable.children) {
         const date = child.children[0].innerText;
         const category = child.children[1].firstChild.value;
 
-        const recommendation = await getRecommendation(category, date);
-
-        if (child.children.length === 3) {
-          child.children[2].innerText = recommendation.mealName;
-        } else {
-          const mealNameEntry = document.createElement("div");
-          mealNameEntry.classList.add("table-meal-name");
-          mealNameEntry.innerText = recommendation.mealName;
-          child.appendChild(mealNameEntry);
-        }
+        getRecommendation(category, date).then((recommendation) => {
+          if (child.children.length === 3) {
+            child.children[2].innerText = recommendation.mealName;
+          } else {
+            const mealNameEntry = document.createElement("div");
+            mealNameEntry.classList.add("table-meal-name");
+            mealNameEntry.innerText = recommendation.mealName;
+            child.appendChild(mealNameEntry);
+          }
+        });
       }
 
       if (mealPlanTable.parentNode.children.length === 2) {
         const saveMeals = document.createElement("div");
         saveMeals.classList.add("button", "meal-button");
         saveMeals.innerText = "Save Meals";
+        saveMeals.id = "saveMealButton";
 
-        saveMeals.addEventListener("click", () => {
+        saveMeals.addEventListener("click", async () => {
           for (const child of mealPlanTable.children) {
             const date = child.children[0].innerText;
             const mealName = child.children[2].innerText;
@@ -161,9 +170,10 @@ endDate.addEventListener("change", async () => {
               mealPlanDate: date,
               mealName: mealName
             }
-            saveMeal(data, false);
+            await saveMeal(data, false);
           }
           configureMealsContainer();
+          window.location.reload();
           modal.style.display = "none";
           startDate.value = "";
           endDate.value = "";
@@ -171,7 +181,6 @@ endDate.addEventListener("change", async () => {
           mealPlanTable.style.display = "none";
           mealPlanTable.parentNode.removeChild(saveMeals);
           mealPlanTable.parentNode.removeChild(recommendationsButton);
-          location.reload()
         });
 
         mealPlanTable.parentNode.appendChild(saveMeals);
